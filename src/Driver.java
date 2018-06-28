@@ -7,7 +7,7 @@ public class Driver
     public static void main(String[] args)
     {
         ScriptAnalyzer analyzer = new ScriptAnalyzer();
-        File input = new File("C:\\Users\\tyler\\Desktop\\ScriptAnalyzer\\Input\\I Was Just Thinking About You.txt");
+        File input = new File("C:\\Users\\tyler\\Desktop\\ScriptAnalyzer\\Input\\AV_ModGeneral1.txt");
         File output = new File("C:\\Users\\tyler\\Desktop\\ScriptAnalyzer\\Output\\I Was Just Thinking About You.js");
         try
         {
