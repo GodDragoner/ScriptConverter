@@ -26,15 +26,15 @@ public class ScriptAnalyzer
     public ScriptAnalyzer()
     {
         sendMessageFormat = Pattern.compile("(\\s*(" + RegexHelper.messageChar + ")+\\s*)");
-        funcStartFormat = Pattern.compile("\\s*(\\((\\w|\\s|')+\\))\\s*");
-        atIncludedFormat = Pattern.compile("\\s*((" + RegexHelper.messageChar + ")+)\\s*(([" + RegexHelper.atGotoFunction + "|" + RegexHelper.atFunction + "])+)");
-        atCommandFormat = Pattern.compile("\\s*(@((\\w|\\s|')+))+((\\w|\\.|,|<|>|#|'|\\/|\\s|\\?)+)*\\s*");
+        funcStartFormat = Pattern.compile("\\s*(\\((\\w|\\s|'|_)+\\))\\s*");
+        atCommandFormat = Pattern.compile(RegexHelper.allAtCommands);
+        atIncludedFormat = Pattern.compile("\\s*((" + RegexHelper.messageChar + ")+)(" + atCommandFormat + ")");
         responseFormat = Pattern.compile("\\s*(\\[((" + RegexHelper.responseChar + "+)|\\w+\\d*\\s*\\w+\\d*|,\\s*)+])\\s*((" + RegexHelper.messageChar + ")+)\\s*((" + RegexHelper.atGotoFunction + ")|"
                 + "(" + RegexHelper.atFunction +"))*");
-        outPutString = new StringBuffer();    
+        outPutString = new StringBuffer();
     }
     
-    public void analyze(File input, File output) throws FileNotFoundException
+    public StringBuffer analyze(File input, File output) throws FileNotFoundException
     {
         if (!input.exists())
         {
@@ -92,12 +92,16 @@ public class ScriptAnalyzer
                         currentScope = new MainScope();
                     }
                     String group1 = atMessageMatcher.group(1);
-                    String group3 = atMessageMatcher.group(3);
+                    String group5 = atMessageMatcher.group(5);
                     if (group1.charAt(group1.length() - 1) == ' ')
                     {
                         group1 = group1.substring(0, group1.length() - 1);
                     }
-                    currentScope.addComplexMessage(group1, group3, true);
+                    currentScope.addComplexMessage(group1, group5, true);
+                }
+                else if (responseMatcher.matches())
+                {
+                    currentScope.addResponse(line);
                 }
                 else if (atCommandMatcher.matches())
                 {
@@ -108,12 +112,9 @@ public class ScriptAnalyzer
                     }
                     currentScope.addAtCommand(line);
                 }
-                else if (responseMatcher.matches())
-                {
-                    currentScope.addResponse(line);
-                }
                 else
                 {
+                    System.out.println("uninterpreted analyzer:" + line);
                     currentScope.addUninterpreted(line);
                 }
             }
@@ -131,5 +132,6 @@ public class ScriptAnalyzer
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        return outPutString;
     }
 }

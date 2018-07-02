@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,56 +36,7 @@ public class MainScope extends CodeScope
         {
             startIf();
         }
-        addSimpleMessage(message);
-        Matcher thisMatcher = Pattern.compile("((" + RegexHelper.atGotoFunction + ")|(" + RegexHelper.atFunction + "))").matcher(methodCall);
-        /*if (!thisMatcher.matches())
-        {
-            System.out.println("bad error");
-        }*/
-        /*for (int i = 0; i < thisMatcher.groupCount(); i++)
-        {
-            System.out.println("Group " + i + ":" + thisMatcher.group(i) + ";");
-        }*/
-        ArrayList<String> methods = new ArrayList<String>();
-        while (thisMatcher.find())
-        {
-            addAtCommand(thisMatcher.group(0).trim());
-            //methods.add(thisMatcher.group(0).trim());
-        }
-        
-        
-        
-        //TODO add actual method calls
-        /*if (groupa.equalsIgnoreCase("goto"))
-        {
-            addMethodCall(methodName, returnOut);
-            if (inIfScope)
-            {
-                addIfAfterScope = true;
-            }
-        }
-        else if (groupa.toLowerCase().contains("chance"))
-        {
-            //System.out.println("in chance");
-            Matcher chanceMatcher = Pattern.compile("\\w+(\\d\\d)").matcher(groupa);
-            if (!chanceMatcher.matches())
-            {
-                System.out.println("regex doesnt match when it should");
-            }
-            int chance = Integer.parseInt(chanceMatcher.group(1));
-            String originalTabbing = tabbing;
-            addOutput(tabbing + "if ((Math.floor(Math.random() * (100 - 1 + 1)) + 1) <= " + chance + "){", methodCall);
-            tabbing += "    ";
-            addMethodCall(methodName, false);
-            tabbing = originalTabbing;
-            addOutput(tabbing + "}", "}");
-            addOutput(tabbing + "else {", "else {");
-            tabbing += "    ";
-            startedBraces++;
-        }
-        else {
-            addUninterpreted(methodCall);
-        }*/
+        super.addComplexMessage(message, methodCall, returnOut);
     }
     
     //@Override
@@ -192,7 +142,7 @@ public class MainScope extends CodeScope
         super.addAtCommand(atCommand);
     }
     
-    public void addResponse(String response)
+    /*public void addResponse(String response)
     {
         Matcher thisMatcher = Pattern.compile("\\s*(\\[(\\s*((" + RegexHelper.responseChar + "+\\s*)+),*)+\\])\\s*((" + RegexHelper.messageChar + ")+)\\s*((("+ RegexHelper.atGotoFunction +")|"
                 + RegexHelper.atFunction + ")*)").matcher(response);
@@ -286,6 +236,22 @@ public class MainScope extends CodeScope
             addOutput(tabbing + "}", response);
             inIfScope = false;
         }
+        
+    }*/
+
+    @Override
+    public void addCallReturn(String methodName, boolean endScope)
+    {
+        if (addIfAfterScope && !inIfScope)
+        {
+            startIf();
+        }
+        addOutput(tabbing + "run(\"" + methodName + "\");", methodName);
+        addOutput(tabbing + "exit = true;", "exit = true;");
+        addIfAfterScope = true;
+        
+        if (endScope)
+            endScope();
         
     }
 
