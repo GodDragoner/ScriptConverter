@@ -124,7 +124,12 @@ public abstract class CodeScope
     
     public abstract void addMethodCall(String methodName, boolean endScope);
     
-    public abstract void addCallReturn(String methodName, boolean endScope);
+    public abstract void addCall(String methodName, boolean endScope);
+    
+    public void addCallReturn(String methodName)
+    {
+        addOutput(tabbing + "run(\"" + methodName + "\");", methodName);
+    }
     
     public void addAtCommand(String atCommand)
     {
@@ -141,11 +146,6 @@ public abstract class CodeScope
             Matcher atSetVarMatcher = Pattern.compile("\\s*(" + RegexHelper.atSetFunction + ")\\s*").matcher(thisMatch.trim());
             Matcher atChangeVarMatcher = Pattern.compile("\\s*" + RegexHelper.atChangeVarFunction + "\\s*").matcher(thisMatch.trim());
             Matcher atBracesMatcher = Pattern.compile("\\s*" + RegexHelper.atBracesFunction + "\\s*").matcher(thisMatch.trim());
-            if (thisMatch.contains("FollowUp"))
-            {
-                System.out.println(thisMatch);
-                int a = 2;
-            }
             if (atGotoMatcher.matches())
             {
                 String command = atGotoMatcher.group(2);
@@ -260,13 +260,57 @@ public abstract class CodeScope
                 }
                 else if (command.equalsIgnoreCase("callreturn"))
                 {
+                    addCallReturn(methodName);
+                }
+                else if (command.equalsIgnoreCase("call"))
+                {
                     if (startedBraces == 0)
                     {
-                        addCallReturn(methodName, true);
+                        addCall(methodName, true);
                     }
                     else
                     {
-                        addCallReturn(methodName, false);
+                        addCall(methodName, false);
+                    }
+                }
+                else if (command.equalsIgnoreCase("notflag"))
+                {
+                    addOutput(tabbing + "if (!getVar(\"" + methodName + "\", false)){", methodName);
+                    tabbing += "    ";
+                    insideIf = true;
+                }
+                else if (command.equalsIgnoreCase("flag"))
+                {
+                    addOutput(tabbing + "if (getVar(\"" + methodName + "\", false)){", methodName);
+                    tabbing += "    ";
+                    insideIf = true;
+                }
+                else if (command.equalsIgnoreCase("setdate"))
+                {
+                    Matcher localMatcher = Pattern.compile("((\\w|\\d|'|_|\\s)+)").matcher(methodName);
+                    if (!localMatcher.find())
+                    {
+                        System.out.println("didnt find when should setdate 1");
+                    }
+                    String dateName = localMatcher.group(1);
+                    if (!localMatcher.find())
+                    {
+                        System.out.println("didnt find when should setdate 2");
+                    }
+                    Matcher dateMatcher = Pattern.compile("(\\d+)\\s+((\\w|\\d|'|_|\\s)+)").matcher(methodName);
+                    if (!dateMatcher.find())
+                    {
+                        System.out.println("didnt find when should setdate 3");
+                    }
+                    String dateNumber = dateMatcher.group(1);
+                    String timeMeasurement = dateMatcher.group(2);
+                    if (dateNumber.trim().equals("0"))
+                    {
+                        addOutput(tabbing + "setDate(\"" + dateName + "\");", "setDate(\"" + dateName + "\");");
+                    }
+                    else
+                    {
+                        System.out.println("weird arg for setdate " + dateNumber + timeMeasurement);
                     }
                 }
                 else if (command.equalsIgnoreCase("rt"))
@@ -405,6 +449,7 @@ public abstract class CodeScope
                 }
                 else
                 {
+                    System.out.println("uninterpreted:" + thisMatch);
                     addUninterpreted(thisMatch);
                 }
             }
@@ -419,6 +464,13 @@ public abstract class CodeScope
                     addOutput(tabbing + "//Info: " + commandArgs, "//Info: " + commandArgs);
                     
                 }
+                else if (command.equalsIgnoreCase("orgasmrestricted"))
+                {
+                    addOutput(tabbing + "if (getVar(\"orgasmrestricted\", false){", "if (getVar(\"orgasmrestricted\", false){");
+                    tabbing += "    ";
+                    insideIf = true;
+                    addSimpleMessage(commandArgs);
+                }
                 else if (command.equalsIgnoreCase("stroking"))
                 {
                     addOutput(tabbing + "if (isStroking()){", "if (isStroking()){");
@@ -432,6 +484,10 @@ public abstract class CodeScope
                     tabbing += "    ";
                     insideIf = true;
                     addSimpleMessage(commandArgs);
+                }
+                else if (command.equalsIgnoreCase("systemmessage"))
+                {
+                    addOutput(tabbing + "SMessage(\"" + commandArgs + "\", 2, 0);", "SMessage(\"" + commandArgs + "\", 2, 0);");
                 }
                 else
                 {
@@ -464,7 +520,8 @@ public abstract class CodeScope
                 {
                     addOutput(tabbing + "holdEdge();", "holdEdge();");
                 }
-                else if (command.equalsIgnoreCase("nullresponse") | command.equalsIgnoreCase("rapidcodeon") | command.equalsIgnoreCase("rapidcodeoff"))
+                else if (command.equalsIgnoreCase("nullresponse") | command.equalsIgnoreCase("rapidcodeon") | command.equalsIgnoreCase("rapidcodeoff")
+                        | command.equalsIgnoreCase("afkon") | command.equalsIgnoreCase("afkoff"))
                 {
                     //addOutput(tabbing + "startEdging();", "startEdging();");
                 }
@@ -492,14 +549,22 @@ public abstract class CodeScope
                 {
                     addOutput(tabbing + "increaseAnger(2);" , "increaseAnger(2);");
                 }
+                else if (command.equalsIgnoreCase("inchastity"))
+                {
+                    addOutput(tabbing + "if (getVar(\"inchastity\", false){", "if (getVar(\"inchastity\", false){");
+                    tabbing += "    ";
+                    insideIf = true;
+                }
                 else
                 {
+                    System.out.println("uninterpreted:" + thisMatch);
                     addUninterpreted(thisMatch);
                 }
                 //System.out.println(atParamsMatcher.group(2));
             }
             else 
             {
+                System.out.println("uninterpreted:" + thisMatch);
                 addUninterpreted(atCommand);
                 System.out.println("Bad error atCommand");
             }

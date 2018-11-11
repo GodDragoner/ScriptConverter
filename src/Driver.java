@@ -8,9 +8,15 @@ public class Driver
 
     public static void main(String[] args)
     {
+        RegexTesting testingRegex = new RegexTesting();
+        testingRegex.testSendMessage();
+        testingRegex.testCommands();
+        
         ScriptAnalyzer analyzer = new ScriptAnalyzer();
-        File input = new File("C:\\Users\\tyler\\Desktop\\ScriptAnalyzer\\Input\\MissBlue1.txt");
-        File output = new File("C:\\Users\\tyler\\Desktop\\ScriptAnalyzer\\Output\\MissBlue1.js");
+        File input = new File("C:\\Users\\tyler\\Desktop\\Coding\\Testing\\test\\TeaseAIJavaGithub\\Personalities\\HouseOfTease\\"
+                + "Original\\House_of_Tease_6\\SKI23TESTING\\INTERPRETERMESSAGE.txt"); /*"C:\\Users\\tyler\\Desktop\\Coding\\Testing\\test\\TeaseAIJavaGithub\\Personalities\\HouseOfTease\\"s + "Original\\House_of_Tease_6\\Stroke\\End\\Extended_End.txt"*/
+        File output = new File("C:\\Users\\tyler\\Desktop\\Coding\\Testing\\test\\TeaseAIJavaGithub\\Personalities\\HouseOfTease\\"
+                + "Structure\\Start\\Extended_Start.js");
         StringBuffer outputBuffer;
         try
         {

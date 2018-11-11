@@ -19,6 +19,7 @@ public class FunctionScope extends CodeScope
     public void addMethodCall(String methodName, boolean endScope)
     {
         methodName = methodName.trim();
+        methodName = methodName.replaceAll(" ", "");
         //System.out.println("method " + methodName);
         addOutput(tabbing + methodName + "();", methodName);
         addOutput(tabbing + "return;", "return;");
@@ -33,7 +34,7 @@ public class FunctionScope extends CodeScope
         isOpen = false;
     }
     @Override
-    public void addCallReturn(String methodName, boolean endScope)
+    public void addCall(String methodName, boolean endScope)
     {
         methodName = methodName.trim();
         //System.out.println("method " + methodName);

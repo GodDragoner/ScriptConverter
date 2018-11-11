@@ -47,20 +47,61 @@ public class ScriptAnalyzer
             FileReader fileReader = new FileReader(input);
             BufferedReader bufferedReader = new BufferedReader(fileReader);
             String line;
-            Matcher sendMessageMatcher;
+            /*Matcher sendMessageMatcher;
             Matcher atMessageMatcher;
             Matcher atCommandMatcher;
             Matcher funcStartMatcher;
-            Matcher responseMatcher;
+            Matcher responseMatcher;*/
+            
             currentScope = new MainScope();
             
             while ((line = bufferedReader.readLine()) != null) 
             {
-                sendMessageMatcher = sendMessageFormat.matcher(line);
+                Matcher sendMessageMatcher = Pattern.compile(RegexHelper.sendMessage).matcher(line);
+                Matcher commandsMatcher = Pattern.compile(RegexHelper.commandsLine).matcher(line);
+                Matcher methodMatcher = Pattern.compile(RegexHelper.methodStart).matcher(line);
+                Matcher messageAfterCommandMatcher = Pattern.compile(RegexHelper.messageAfterCommand).matcher(line);
+                Matcher responseMatcher = Pattern.compile(RegexHelper.response).matcher(line);
+                if (methodMatcher.matches())
+                {
+                    //System.out.println("Method Start in analyzer: " + line);
+                }
+                else if (sendMessageMatcher.matches())
+                {
+                    ParsedLine parsedLine = new ParsedLine(line, ParsedLine.lineRegex.SENDMESSAGE);
+                    //System.out.println("Send Message in analyzer: " + line);
+                }
+                else if (!line.contains("@RT") && commandsMatcher.matches())
+                {
+                    ParsedLine parsedLine = new ParsedLine(line, ParsedLine.lineRegex.COMMANDS);
+                    //System.out.println("Commands line line in analyzer: " + line);
+                }
+                else if (messageAfterCommandMatcher.matches())
+                {
+                    ParsedLine parsedLine = new ParsedLine(line, ParsedLine.lineRegex.MESSAGEAFTERCOMMAND);
+                    //System.out.println("messageAfterCommandMatcher in analyzer: " + line);
+                }
+                else if (responseMatcher.matches())
+                {
+                    //System.out.println("Response line in analyzer: " + line);
+                }
+                else 
+                {
+                    if (!line.trim().equals(""))
+                    {
+                        System.out.println("Uninterpreted line in analyzer: " + line);
+                    }
+                }
+                //before changes
+                /*sendMessageMatcher = sendMessageFormat.matcher(line);
                 funcStartMatcher = funcStartFormat.matcher(line);
                 atMessageMatcher = atIncludedFormat.matcher(line);
                 atCommandMatcher = atCommandFormat.matcher(line);
                 responseMatcher = responseFormat.matcher(line);
+                if (line.equals("Are you completely naked?"))
+                {
+                    System.out.println("debug");
+                }
                 if (sendMessageMatcher.matches())
                 {
                     if (!currentScope.isOpen)
@@ -117,6 +158,8 @@ public class ScriptAnalyzer
                     System.out.println("uninterpreted analyzer:" + line);
                     currentScope.addUninterpreted(line);
                 }
+                System.out.println("line = " + line);*/
+                
             }
             fileReader.close();
             if (currentScope != null && currentScope.isOpen)
