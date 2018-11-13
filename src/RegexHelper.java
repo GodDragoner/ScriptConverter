@@ -28,11 +28,11 @@ public class RegexHelper
     public static final String hashFunction = "(#\\w+\\(\\s?\\w+(\\s?,\\s?\\w+\\s?)*\\))";
     public static final String variable = "#Var\\[\\s*\\w+\\s*\\]";
     public static final String complexWord = "(" + argumentWord + "|" + vocab + "|" + hashFunction + ")";
-    //public static final String argument = "(((" + complexWord + "\\s?((,,|\\.|\\!|:|\\?|'|(\\.)\\.+|%)*)\\s?)+)|" + path + ")";
+    
     public static final String argument = "(((" + complexWord + "\\s?" + lessInclusivePunctuation + ")((\\s|-|\\.\\.\\.)(" + complexWord + "\\s?" + lessInclusivePunctuation + "))*)|" + path + ")";
     public static final String operator = "(\\+|-|\\/|\\*)";
     public static final String comparator = "(<=|>=|=|<|>)";
-    public static final String formatter = "<.+>";
+    public static final String formatter = "<(\\s?" + word + "|" + operator + "\\s?)+>";
     
     public static final String simplePhrase = "((\"|\')?(" + word + "|" + vocab + "|" + emoji + ")(\"|\\.+|\')?(" + punctuation + ")?(\\s+|$))+";
     public static final String randomText = "(@RT(\\(|\\[)(" + argument + "\\s*(,\\s*" + argument + "\\s?)*)(\\)|\\]))";  
@@ -45,8 +45,8 @@ public class RegexHelper
     public static final String anyAtCommand = "((" + ifFunction + ")|(" + atCommandModify + ")|(" + atCommandArgs + ")|(" + atCommandSimple + "))";
     public static final String commandsLine = "((" + anyAtCommand + ")\\s*)+";
     public static final String sendMessage = "((" + phrase + ")((\\s?(" + commandsLine + ")\\s?(" + phrase + ")?)*))";
-    public static final String methodStart = "(\\((" + word + "\\s*)+\\)\\s*(" + commandsLine + ")?)";
+    public static final String methodStart = "(\\(((" + word + "\\s*)+)\\)\\s*(" + commandsLine + ")?)";
     public static final String messageAfterCommand = "((" + commandsLine + ")\\s?(" + sendMessage + "))";
-    public static final String response = "\\[((" + word + "|" + vocab + ")\\s*)+(,\\s*((" + word + "|" + vocab + ")\\s*)+)*\\]\\s*(" + sendMessage + "|" + commandsLine + "|" + messageAfterCommand + ")?";
+    public static final String response = "(\\[((" + word + "|" + vocab + ")\\s*)+(,\\s*((" + word + "|" + vocab + ")\\s*)+)*\\])\\s*(" + sendMessage + "|" + commandsLine + "|" + messageAfterCommand + ")?";
     
 }   

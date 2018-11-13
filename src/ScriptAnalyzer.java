@@ -64,6 +64,7 @@ public class ScriptAnalyzer
                 Matcher responseMatcher = Pattern.compile(RegexHelper.response).matcher(line);
                 if (methodMatcher.matches())
                 {
+                    ParsedLine parsedLine = new ParsedLine(line, ParsedLine.lineRegex.METHOD);
                     //System.out.println("Method Start in analyzer: " + line);
                 }
                 else if (sendMessageMatcher.matches())
@@ -83,6 +84,7 @@ public class ScriptAnalyzer
                 }
                 else if (responseMatcher.matches())
                 {
+                    ParsedLine parsedLine = new ParsedLine(line, ParsedLine.lineRegex.RESPONSE);
                     //System.out.println("Response line in analyzer: " + line);
                 }
                 else 

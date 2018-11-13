@@ -40,10 +40,6 @@ public class IfStatement extends LineComponent
         {
             throw new IllegalArgumentException("Comparator not found in If!!");
         }
-        System.out.println("Condition1:" + condition1);
-        System.out.println("Comparator:" + this.comparator);
-        System.out.println("Condition2:" + condition2);
-        System.out.println("GoToMethod:" + gotoMethod);
     }
     
     @Override

@@ -28,31 +28,12 @@ public class ParsedLine
         lineComponents = new ArrayList<LineComponent>();
         if (thisRegex == ParsedLine.lineRegex.SENDMESSAGE)
         {
-            Matcher sendMessageMatcher = Pattern.compile(RegexHelper.sendMessage).matcher(line);
-            if (!sendMessageMatcher.matches())
-            {
-                throw new IllegalArgumentException("String does not match send message regex");
-            }
-            else
-            {
-                String firstMessage = sendMessageMatcher.group(2); //Get the first phrase
-                lineComponents.add(new Message(firstMessage.trim()));
-                String restOfLine = line.substring(firstMessage.length()); //Rest of line will be MessageAfterCommand
-                //System.out.println("Rest of String:" + restOfLine);
-
-                int endIndex = addCommandsLine(restOfLine);
-                //System.out.println("After Commands:" + restOfLine.substring(endIndex));
-                String phraseAfterCommands = restOfLine.substring(endIndex);
-                if (phraseAfterCommands != null && !phraseAfterCommands.trim().equals(""))
-                {
-                    lineComponents.add(new Message(phraseAfterCommands.trim()));
-                }
-            }
+            addSendMessage(line);
         }
         else if (thisRegex == ParsedLine.lineRegex.COMMANDS)
         {
-            Matcher methodMatcher = Pattern.compile(RegexHelper.commandsLine).matcher(line);
-            if (!methodMatcher.matches())
+            Matcher commandsMatcher = Pattern.compile(RegexHelper.commandsLine).matcher(line);
+            if (!commandsMatcher.matches())
             {
                 throw new IllegalArgumentException("String does not match commandsLine regex");
             }
@@ -63,31 +44,69 @@ public class ParsedLine
         }
         else if (thisRegex == ParsedLine.lineRegex.MESSAGEAFTERCOMMAND)
         {
-            Matcher messageAfterCommandMatcher = Pattern.compile(RegexHelper.messageAfterCommand).matcher(line);
-            if (!messageAfterCommandMatcher.matches())
+            addMessageAfterCommands(line);
+        }
+        else if (thisRegex == ParsedLine.lineRegex.METHOD)
+        {
+            Matcher methodMatcher = Pattern.compile(RegexHelper.methodStart).matcher(line);
+            if (!methodMatcher.matches())
             {
-                throw new IllegalArgumentException("String does not match commandsLine regex");
+                throw new IllegalArgumentException("String does not match methodStart regex");
             }
             else
             {
-                System.out.println("Group0:" + messageAfterCommandMatcher.group());
-                System.out.println("Group2:" + messageAfterCommandMatcher.group(2));
-                int endIndex = addCommandsLine(messageAfterCommandMatcher.group(2));
-                String phraseAfterCommands = line.substring(endIndex);
-                if (phraseAfterCommands != null && !phraseAfterCommands.trim().equals(""))
+                lineComponents.add(new AtMethod(methodMatcher.group(2)));
+                addCommandsLine(methodMatcher.group());
+            }
+        }
+        else if (thisRegex == ParsedLine.lineRegex.RESPONSE)
+        {
+            Matcher responseMatcher = Pattern.compile(RegexHelper.response).matcher(line);
+            if (!responseMatcher.matches())
+            {
+                throw new IllegalArgumentException("String does not match response regex");
+            }
+            else
+            {
+                lineComponents.add(new Response(responseMatcher.group(1)));
+                String restOfString = line.substring(responseMatcher.group(1).length()).trim();
+                //STILL NEEDS TESTING
+                if (!restOfString.equals(""))
                 {
-                    lineComponents.add(new Message(phraseAfterCommands.trim()));
+                    if (restOfString.matches(RegexHelper.commandsLine))
+                    {
+                        addCommandsLine(restOfString);
+                    }
+                    else if (restOfString.matches(RegexHelper.messageAfterCommand))
+                    {
+                        addMessageAfterCommands(restOfString);
+                    }
+                    else if (restOfString.matches(RegexHelper.sendMessage))
+                    {
+                        addSendMessage(restOfString);
+                    }
                 }
-                else
-                {
-                    throw new IllegalArgumentException("MessageAfterCommand did not have a phrase after the commands");
-                }
-                String restOfString = line.substring(endIndex);
             }
         }
         for (LineComponent thisComponent: lineComponents)
         {
             System.out.println(thisComponent.toString());
+        }
+    }
+    
+    public void addMessageAfterCommands(String messageAfterCommands)
+    {
+        Matcher messageAfterCommandMatcher = Pattern.compile(RegexHelper.messageAfterCommand).matcher(messageAfterCommands);
+        if (!messageAfterCommandMatcher.matches())
+        {
+            throw new IllegalArgumentException("String does not match messageAfterCommand regex");
+        }
+        else
+        {
+            int endIndex = addCommandsLine(messageAfterCommandMatcher.group(2));
+
+            String restOfString = messageAfterCommands.substring(endIndex);
+            addSendMessage(restOfString.trim());
         }
     }
     
@@ -98,7 +117,6 @@ public class ParsedLine
         int endIndex = 0;
         while (anyCommand.find())
         {
-            String s = anyCommand.group();
             if (Pattern.compile(RegexHelper.ifFunction).matcher(anyCommand.group().trim()).matches())
             {
                 lineComponents.add(new IfStatement(anyCommand.group().trim()));
@@ -109,10 +127,33 @@ public class ParsedLine
             }
             else 
             {
-                lineComponents.add(new AtMethod(anyCommand.group().trim()));
+                lineComponents.add(new AtCommand(anyCommand.group().trim()));
             }
             endIndex = anyCommand.end();
         }
         return endIndex;
+    }
+    public void addSendMessage(String sendMessage)
+    {
+        Matcher sendMessageMatcher = Pattern.compile(RegexHelper.sendMessage).matcher(sendMessage);
+        if (!sendMessageMatcher.matches())
+        {
+            throw new IllegalArgumentException("String does not match send message regex");
+        }
+        else
+        {
+            String firstMessage = sendMessageMatcher.group(2); //Get the first phrase
+            lineComponents.add(new Message(firstMessage.trim()));
+            String restOfLine = sendMessage.substring(firstMessage.length()); //Rest of line will be MessageAfterCommand
+            //System.out.println("Rest of String:" + restOfLine);
+
+            int endIndex = addCommandsLine(restOfLine);
+            //System.out.println("After Commands:" + restOfLine.substring(endIndex));
+            String phraseAfterCommands = restOfLine.substring(endIndex);
+            if (phraseAfterCommands != null && !phraseAfterCommands.trim().equals(""))
+            {
+                lineComponents.add(new Message(phraseAfterCommands.trim()));
+            }
+        }
     }
 }
