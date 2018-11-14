@@ -23,7 +23,11 @@ public class RandomText extends LineComponent
             while (argumentMatcher.find())
             {
                 //System.out.println("Argument:" + argumentMatcher.group());
-                phrases.add(new Phrase(argumentMatcher.group().trim()));
+                String tempString = StringHelper.removeChars(argumentMatcher.group().trim(), "(", ")");
+                tempString = tempString.replaceAll(",,", "-2232-");
+                tempString = tempString.replaceAll(",", "");
+                tempString = tempString.replaceAll("-2232-", ",");
+                phrases.add(new Phrase(tempString));
             }
         }
     }
@@ -31,6 +35,11 @@ public class RandomText extends LineComponent
     @Override
     public String toString()
     {
-        return "RandomText:" + content;
+        String toReturn = "";
+        for (Phrase phrase: phrases)
+        {
+            toReturn += "<" + phrase.toString() + ">";
+        }
+        return "RandomText:" + toReturn;
     }
 }

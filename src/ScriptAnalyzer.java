@@ -3,9 +3,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 
 public class ScriptAnalyzer
 {
@@ -36,22 +36,17 @@ public class ScriptAnalyzer
     
     public StringBuffer analyze(File input, File output) throws FileNotFoundException
     {
+        ArrayList<ParsedLine> parsedInput = new ArrayList<ParsedLine>();
         if (!input.exists())
         {
             throw new FileNotFoundException();
         }
-        //System.out.println("file exists");
         
         try
         {
             FileReader fileReader = new FileReader(input);
             BufferedReader bufferedReader = new BufferedReader(fileReader);
             String line;
-            /*Matcher sendMessageMatcher;
-            Matcher atMessageMatcher;
-            Matcher atCommandMatcher;
-            Matcher funcStartMatcher;
-            Matcher responseMatcher;*/
             
             currentScope = new MainScope();
             
@@ -63,114 +58,47 @@ public class ScriptAnalyzer
                 Matcher messageAfterCommandMatcher = Pattern.compile(RegexHelper.messageAfterCommand).matcher(line);
                 Matcher responseMatcher = Pattern.compile(RegexHelper.response).matcher(line);
                 if (methodMatcher.matches())
-                {
-                    ParsedLine parsedLine = new ParsedLine(line, ParsedLine.lineRegex.METHOD);
+                {  
+                    parsedInput.add(new ParsedLine(line, ParsedLine.lineRegex.METHOD));
                     //System.out.println("Method Start in analyzer: " + line);
                 }
                 else if (sendMessageMatcher.matches())
                 {
-                    ParsedLine parsedLine = new ParsedLine(line, ParsedLine.lineRegex.SENDMESSAGE);
+                    parsedInput.add(new ParsedLine(line, ParsedLine.lineRegex.SENDMESSAGE));
                     //System.out.println("Send Message in analyzer: " + line);
                 }
                 else if (!line.contains("@RT") && commandsMatcher.matches())
                 {
-                    ParsedLine parsedLine = new ParsedLine(line, ParsedLine.lineRegex.COMMANDS);
+                    parsedInput.add(new ParsedLine(line, ParsedLine.lineRegex.COMMANDS));
                     //System.out.println("Commands line line in analyzer: " + line);
                 }
                 else if (messageAfterCommandMatcher.matches())
                 {
-                    ParsedLine parsedLine = new ParsedLine(line, ParsedLine.lineRegex.MESSAGEAFTERCOMMAND);
+                    parsedInput.add(new ParsedLine(line, ParsedLine.lineRegex.MESSAGEAFTERCOMMAND));
                     //System.out.println("messageAfterCommandMatcher in analyzer: " + line);
                 }
                 else if (responseMatcher.matches())
                 {
-                    ParsedLine parsedLine = new ParsedLine(line, ParsedLine.lineRegex.RESPONSE);
+                    parsedInput.add(new ParsedLine(line, ParsedLine.lineRegex.RESPONSE));
                     //System.out.println("Response line in analyzer: " + line);
                 }
                 else 
                 {
                     if (!line.trim().equals(""))
                     {
+                        parsedInput.add(new ParsedLine(line, ParsedLine.lineRegex.UNINTERPRETED));
                         System.out.println("Uninterpreted line in analyzer: " + line);
                     }
-                }
-                //before changes
-                /*sendMessageMatcher = sendMessageFormat.matcher(line);
-                funcStartMatcher = funcStartFormat.matcher(line);
-                atMessageMatcher = atIncludedFormat.matcher(line);
-                atCommandMatcher = atCommandFormat.matcher(line);
-                responseMatcher = responseFormat.matcher(line);
-                if (line.equals("Are you completely naked?"))
-                {
-                    System.out.println("debug");
-                }
-                if (sendMessageMatcher.matches())
-                {
-                    if (!currentScope.isOpen)
+                    else
                     {
-                        outPutString.append(currentScope.getOutput());
-                        currentScope = new MainScope();
+                        parsedInput.add(new ParsedLine(line, ParsedLine.lineRegex.BLANK));
                     }
-                    currentScope.addSimpleMessage(line);
                 }
-                else if (funcStartMatcher.matches())
-                {
-                    String methodName = funcStartMatcher.group(1);
-                    methodName = methodName.replaceAll("\\(", "");
-                    methodName = methodName.replaceAll("\\)", "");
-                    methodName = methodName.replaceAll(" ", "");
-                    methodName = methodName.replaceAll("'", "");
-                    if (currentScope != null && currentScope.isOpen())
-                    {
-                        currentScope.addMethodCall(methodName, true);
-                    }
-                    outPutString.append(currentScope.getOutput());
-                    currentScope = new FunctionScope(methodName);
-                }
-                else if (atMessageMatcher.matches())
-                {
-                    if (!currentScope.isOpen)
-                    {
-                        outPutString.append(currentScope.getOutput());
-                        currentScope = new MainScope();
-                    }
-                    String group1 = atMessageMatcher.group(1);
-                    String group5 = atMessageMatcher.group(5);
-                    if (group1.charAt(group1.length() - 1) == ' ')
-                    {
-                        group1 = group1.substring(0, group1.length() - 1);
-                    }
-                    currentScope.addComplexMessage(group1, group5, true);
-                }
-                else if (responseMatcher.matches())
-                {
-                    currentScope.addResponse(line);
-                }
-                else if (atCommandMatcher.matches())
-                {
-                    if (!currentScope.isOpen)
-                    {
-                        outPutString.append(currentScope.getOutput());
-                        currentScope = new MainScope();
-                    }
-                    currentScope.addAtCommand(line);
-                }
-                else
-                {
-                    System.out.println("uninterpreted analyzer:" + line);
-                    currentScope.addUninterpreted(line);
-                }
-                System.out.println("line = " + line);*/
                 
             }
             fileReader.close();
-            if (currentScope != null && currentScope.isOpen)
-            {
-                currentScope.endScope();
-            }
-            outPutString.append(currentScope.getOutput());
-            System.out.println("Contents of file:");
-            System.out.println(outPutString.toString());
+            OutputGenerator generator = new OutputGenerator(parsedInput);
+            generator.generateOutput();
         }
         catch (IOException e)
         {
