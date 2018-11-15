@@ -71,6 +71,18 @@ public class OutputGenerator
         {
             pushLine("Message:" + component.content);
         }
+        else if (component instanceof Response)
+        {
+            pushLine("Response:" + ((Response) component).responses.toString());
+        }
+        else if (component instanceof ModifyCommand)
+        {
+            pushLine("Modify:" + ((ModifyCommand) component).toString());
+        }
+        else if (component instanceof IfStatement)
+        {
+            pushLine("IfStatement:" + ((IfStatement) component).toString());
+        }
     }
     
     //This is where most commands need to be converted
