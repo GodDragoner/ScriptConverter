@@ -43,15 +43,6 @@ public class ModifyCommand extends LineComponent
         {
             operatorsList.add(operator.group().trim());
         }
-        System.out.println("ToChange:" + toChange);
-        for (String s: argumentsList)
-        {
-            System.out.println("Argument:" + s);
-        }
-        for (String s: operatorsList)
-        {
-            System.out.println("Operator:" + s);
-        }
     }
     
     @Override

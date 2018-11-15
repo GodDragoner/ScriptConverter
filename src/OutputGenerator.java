@@ -7,6 +7,7 @@ public class OutputGenerator
     
     private ArrayList<String> outputJavascript;
     private ParsedLine thisParsedLine;
+    private int currentLineIndex;
     
     private Stack<String> scoping;
     
@@ -22,15 +23,15 @@ public class OutputGenerator
     //send it off to get its output generated and pushed to the arraylist
     public String generateOutput()
     {
-        outputJavascript.add("main();");
         pushFunction("main");
         
         for (ParsedLine parsedLine: parsedInput)
         {
             thisParsedLine = parsedLine;
+            currentLineIndex = 0;
             if (parsedLine.thisRegex.equals(ParsedLine.lineRegex.UNINTERPRETED))
             {
-                pushLine("--UNINTERPRETED LINE:" + parsedLine.line);
+                //pushLine("--UNINTERPRETED LINE:" + parsedLine.line);
             }
             else if (parsedLine.thisRegex.equals(ParsedLine.lineRegex.BLANK))
             {
@@ -40,6 +41,7 @@ public class OutputGenerator
                 for (LineComponent lineComponent: parsedLine.lineComponents)
                 {
                     pushOutput(lineComponent);
+                    currentLineIndex++;
                 }
             }
         }
@@ -47,7 +49,7 @@ public class OutputGenerator
         {
             popScoping();
         }
-        System.out.println("Printing output");
+        System.out.println("Printing output:");
         for (String outputString: outputJavascript)
         {
             System.out.println(outputString);
@@ -65,23 +67,24 @@ public class OutputGenerator
         }
         else if (component instanceof AtCommand)
         {
-            pushCommand((AtCommand) component);
+            //pushCommand((AtCommand) component);
         }
         else if (component instanceof Message)
         {
-            pushLine("Message:" + component.content);
+            //pushLine("Message:" + ((Message) component).content);
+            pushMessage((Message) component);
         }
         else if (component instanceof Response)
         {
-            pushLine("Response:" + ((Response) component).responses.toString());
+            //pushLine("Response:" + ((Response) component).responses.toString());
         }
         else if (component instanceof ModifyCommand)
         {
-            pushLine("Modify:" + ((ModifyCommand) component).toString());
+            //pushLine("Modify:" + ((ModifyCommand) component).toString());
         }
         else if (component instanceof IfStatement)
         {
-            pushLine("IfStatement:" + ((IfStatement) component).toString());
+            //pushLine("IfStatement:" + ((IfStatement) component).toString());
         }
     }
     
@@ -94,10 +97,83 @@ public class OutputGenerator
         pushLine(command.toString());
     }
     
+    //This is where messages will get pushed and output generated for messages
+    private void pushMessage(Message message)
+    {
+        //Check the command before this message and if its SystemMessage make this a SMessage instead of a CMessage
+        String outputMessage = "";
+        if (currentLineIndex >= 1)
+        {
+            if (thisParsedLine.lineComponents.get(currentLineIndex - 1) instanceof AtCommand && ((AtCommand) thisParsedLine.lineComponents.get(currentLineIndex - 1)).commandName.equalsIgnoreCase("systemmessage"))
+            {
+                outputMessage += "SMessage(";
+            }
+            else
+            {
+                outputMessage += "CMessage(";
+            }
+        }
+        else
+        {
+            outputMessage += "CMessage(";
+        }
+        int counter = 0;
+        for (LineComponent comp: message.messageComponents)
+        {
+            //Concatenate the different parts
+            if (counter != 0)
+            {
+                outputMessage += " + ";
+            }
+            if (comp instanceof Phrase)
+            {
+                //All of this checking with the counter is just to make sure that there is proper spacing when @RT or other similar commands are used
+                outputMessage += "\"" + ((Phrase) comp).message.trim();
+                if (message.messageComponents.size() > (counter + 1))
+                {
+                    outputMessage += " \"";
+                }
+                else
+                {
+                    outputMessage += "\"";
+                }
+            }
+            else if (comp instanceof RandomText)
+            {
+                RandomText randomText = (RandomText) comp;
+                outputMessage += "RandomText(";
+                boolean moreComponents = message.messageComponents.size() > (counter + 1);
+                int randomTextCounter = 0;
+                for (Phrase phrase: randomText.phrases)
+                {
+                    outputMessage += "\"" + phrase.message.trim();
+                    if (moreComponents)
+                    {
+                        outputMessage += " \"";
+                    }
+                    else
+                    {
+                        outputMessage += "\"";
+                    }
+                    if (randomText.phrases.size() > randomTextCounter + 1)
+                    {
+                        outputMessage += ", ";
+                    }
+                    randomTextCounter++;
+                }
+                outputMessage += ")";
+            }
+            counter++;
+        }
+        outputMessage += ");";
+        pushLine(outputMessage);
+    }
+    
     
     //Start a new function
     private void pushFunction(String functionName)
     {
+        pushLine(functionName + "();");
         while (!scoping.isEmpty())
         {
             popScoping();

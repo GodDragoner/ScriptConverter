@@ -6,7 +6,7 @@ public class AtMethod extends LineComponent
     {
         super(content);
         // TODO Auto-generated constructor stub
-        this.methodName = content;
+        this.methodName = content.trim().replaceAll(" ", "_");
     }
     
     public String toString()

@@ -16,7 +16,7 @@ public class Response extends LineComponent
         Matcher argumentMatcher = Pattern.compile(argumentRegex).matcher(content);
         while (argumentMatcher.find())
         {
-            System.out.println("Argument:" + argumentMatcher.group(4).trim());
+            //System.out.println("Argument:" + argumentMatcher.group(4).trim());
             responses.add(argumentMatcher.group(4).trim());
         }
         

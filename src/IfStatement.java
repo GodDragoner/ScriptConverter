@@ -11,7 +11,7 @@ public class IfStatement extends LineComponent
     {
         super(content);
         // TODO Auto-generated constructor stub
-        System.out.println("If start:" + content);
+        //System.out.println("If start:" + content);
         String arguments = "(\\(|\\[)" + RegexHelper.argument + "(\\)|\\])";
         Matcher argumentsMatcher = Pattern.compile(arguments).matcher(content);
         int counter = 0;

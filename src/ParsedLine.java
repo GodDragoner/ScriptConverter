@@ -22,7 +22,7 @@ public class ParsedLine
     
     public ParsedLine(String line, lineRegex lineRegex)
     {
-        System.out.println("Line:" + line);
+        //System.out.println("Line:" + line);
         this.line = line;
         this.thisRegex = lineRegex;
         lineComponents = new ArrayList<LineComponent>();
@@ -88,10 +88,10 @@ public class ParsedLine
                 }
             }
         }
-        for (LineComponent thisComponent: lineComponents)
+        /*for (LineComponent thisComponent: lineComponents)
         {
             System.out.println(thisComponent.toString());
-        }
+        }*/
     }
     
     public void addMessageAfterCommands(String messageAfterCommands)
