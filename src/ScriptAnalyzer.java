@@ -7,33 +7,11 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+//The guts of all of the parsing happens here
 public class ScriptAnalyzer
-{
-    private Pattern sendMessageFormat;
+{  
     
-    private Pattern funcStartFormat;
-    
-    private Pattern atIncludedFormat;
-    
-    private Pattern atCommandFormat;
-    
-    private Pattern responseFormat;
-    
-    private StringBuffer outPutString;
-    
-    private CodeScope currentScope;
-    
-    public ScriptAnalyzer()
-    {
-        sendMessageFormat = Pattern.compile("(\\s*(" + RegexHelper.messageChar + ")+\\s*)");
-        funcStartFormat = Pattern.compile("\\s*(\\((\\w|\\s|'|_)+\\))\\s*");
-        atCommandFormat = Pattern.compile(RegexHelper.allAtCommands);
-        atIncludedFormat = Pattern.compile("\\s*((" + RegexHelper.messageChar + ")+)(" + atCommandFormat + ")");
-        responseFormat = Pattern.compile("\\s*(\\[((" + RegexHelper.responseChar + "+)|\\w+\\d*\\s*\\w+\\d*|,\\s*)+])\\s*((" + RegexHelper.messageChar + ")+)\\s*((" + RegexHelper.atGotoFunction + ")|"
-                + "(" + RegexHelper.atFunction +"))*");
-        outPutString = new StringBuffer();
-    }
-    
+    //Gets called from the driver to parse all of the input from the file and put it into an arraylist of parsed lines
     public StringBuffer analyze(File input, File output) throws FileNotFoundException
     {
         ArrayList<ParsedLine> parsedInput = new ArrayList<ParsedLine>();
@@ -47,8 +25,6 @@ public class ScriptAnalyzer
             FileReader fileReader = new FileReader(input);
             BufferedReader bufferedReader = new BufferedReader(fileReader);
             String line;
-            
-            currentScope = new MainScope();
             
             while ((line = bufferedReader.readLine()) != null) 
             {
@@ -105,6 +81,8 @@ public class ScriptAnalyzer
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        return outPutString;
+        //Not currently returning anything to write to the file
+        //Will be implemented later
+        return null;
     }
 }

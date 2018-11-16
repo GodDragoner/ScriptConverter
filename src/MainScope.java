@@ -1,6 +1,9 @@
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+//THIS CLASS ISN'T BEING USED ANYMORE. IT WAS IN THE OLD CODE
+//HOWEVER, IT MIGHT BE USEFUL FOR REFERENCE ON HOW TO CONVERT
+//SOME OF THE COMMANDS
 public class MainScope extends CodeScope
 {
     private boolean inIfScope = false;

@@ -1,4 +1,5 @@
 
+//Simple string utils
 public class StringHelper
 {
     public static String removeChars(String removeFrom, String ... toRemove)

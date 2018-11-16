@@ -2,7 +2,9 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
+//THIS CLASS ISN'T BEING USED ANYMORE. IT WAS IN THE OLD CODE
+//HOWEVER, IT MIGHT BE USEFUL FOR REFERENCE ON HOW TO CONVERT
+//SOME OF THE COMMANDS
 public abstract class CodeScope
 {
     protected StringBuffer output;

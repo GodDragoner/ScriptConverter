@@ -1,6 +1,9 @@
 import java.util.ArrayList;
 import java.util.Stack;
 
+//This class is the single class that generates all of the output javascript. It uses
+//an arraylist of parsedlines which this class uses to be able to easily convert code
+//without having to do any parsing or using regexes
 public class OutputGenerator
 {
     private ArrayList<ParsedLine> parsedInput;
@@ -111,6 +114,9 @@ public class OutputGenerator
         if (parameters.size() == 0)
         {
             //Commands without parameters
+            //Put any commands with no parameters in this switch and
+            //if they have a output version in javascript
+            //push the line with the converted javascript version
             switch (commandName.toLowerCase())
             {
                 case "rapidcodeon":
@@ -125,6 +131,11 @@ public class OutputGenerator
         }
         else
         {
+            //Put any commands with parameters in this switch and
+            //if they have a output version in javascript
+            //push the line with the converted javascript version
+            //switching on the command name and then using the
+            //parameters array list to access the command's parameters
             switch (commandName.toLowerCase())
             {
                 
@@ -162,6 +173,7 @@ public class OutputGenerator
     }
     
     //This is where messages will get pushed and output generated for messages
+    //Also includes the code to do a getresponse
     private void pushMessage(Message message)
     {
         if (message.messageComponents.get(0).content.equals("Are you horny already?"))
@@ -331,11 +343,7 @@ public class OutputGenerator
                     differentAnswerOutput += "))";
                     pushLine(differentAnswerOutput);
                     pushScoping("differentAnswer");
-                    /*for (LineComponent lineComponent: parsedLine.lineComponents)
-                    {
-                        pushOutput(lineComponent);
-                        indexInCurrentLine++;
-                    }*/
+                    
                     indexInCurrentLine = 1;
                     thisParsedLine = differentAnswerLine;
                     for (int i = 1; i < differentAnswerLine.lineComponents.size(); i++)
@@ -351,7 +359,7 @@ public class OutputGenerator
     }
     
     
-    //Start a new function
+    //Starts a new function with the given name
     private void pushFunction(String functionName)
     {
         pushLine(functionName + "();");
@@ -364,7 +372,7 @@ public class OutputGenerator
         answerCounter = 0;
     }
     
-    //Start a new scope
+    //Start a new scope. Use this every time an if or something similar is started
     private void pushScoping(String scopeName)
     {
         pushLine("{");
@@ -372,6 +380,7 @@ public class OutputGenerator
     }
     
     //Close a scope
+    //Use to close a bracing and end a scoping block
     private String popScoping()
     {
         String toReturn = "";

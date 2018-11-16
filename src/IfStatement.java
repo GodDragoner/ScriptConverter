@@ -1,6 +1,12 @@
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
+//Represents an if statement in TAI. 
+//Condition1, condition2, and goto method are as follows
+//If(condition1 comparator condition2) goto(gotomethod)
+//Where condition1, comparator, condition2, and gotomethod could be as follows
+//If(x = 2) goto(AV_test)
 public class IfStatement extends LineComponent
 {
     public String condition1;

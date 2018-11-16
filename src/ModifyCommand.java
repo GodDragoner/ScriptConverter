@@ -2,6 +2,10 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+//A modify command represents setting or changing a variable in TAI
+//Use commandName to determine if it is a setVar or changeVar
+//Then follow this format to understand the fields:
+//toChange = argumentsList[0] operatorsList[0] argumentsList[1] operatorsList[1] argumentsList[2]...
 public class ModifyCommand extends LineComponent
 {
     public String commandName;

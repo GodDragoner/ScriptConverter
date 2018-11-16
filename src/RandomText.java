@@ -2,6 +2,9 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+//Represents the @RT command from TAI. 
+//Has an arraylist of phrases representing the possible
+//output values
 public class RandomText extends LineComponent
 {
     

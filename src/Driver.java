@@ -3,6 +3,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 
+//The driver class of the app. Currently, you need to change the file path of the input folder
+//to whatever file you want to read in. Output isn't getting written to the output file right now
+//You can just copy paste it from the console window for now
 public class Driver
 {
 

@@ -1,4 +1,6 @@
 
+//Represents the #Variable[varname] command in TAI
+//Not yet implemented
 public class Variable extends LineComponent
 {
 

@@ -1,4 +1,7 @@
 
+//A hash function is a type of function in TAI that uses a # to
+//start the function instead of an @. These are also typically
+//allowed inside of messages Ex: #random(1, 7)
 public class HashFunction extends LineComponent
 {
 

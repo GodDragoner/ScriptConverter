@@ -1,6 +1,8 @@
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+//A phrase represents plain text that will be output to the user. It may contain
+//vocabularies and thus, these are converted to the TAJ vocabulary system.
 public class Phrase extends LineComponent
 {
     public String message;

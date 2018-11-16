@@ -2,6 +2,12 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
+//An AtCommand is a command in the original TeaseAI
+//An example AtCommand could be @RapidTextOn or @Goto(AV_DecOrg)
+//In both examples, the command name would be RapidTextOn and Goto respectively
+//However, the second command will have a parameters list of size 1 with the parameter
+//"AV_DecOrg"
 public class AtCommand extends LineComponent
 {
     public String commandName;

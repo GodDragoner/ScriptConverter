@@ -4,6 +4,9 @@ import java.util.regex.Pattern;
 
 import javafx.scene.shape.Line;
 
+//Parsed lines are the keystone of the interpeter step. A parsed line consists of an arraylist
+//of linecomponents. It also has an enum that represents which regex this parsed line matched
+//from the parsing step.
 public class ParsedLine
 {
     public enum lineRegex{
@@ -94,6 +97,7 @@ public class ParsedLine
         }*/
     }
     
+    //Adds linecomponents if the line is in the format of RegexHelper.messageAfterCommand
     public void addMessageAfterCommands(String messageAfterCommands)
     {
         Matcher messageAfterCommandMatcher = Pattern.compile(RegexHelper.messageAfterCommand).matcher(messageAfterCommands);
@@ -110,7 +114,8 @@ public class ParsedLine
         }
     }
     
-    //return index after last found
+    //Adds linecomponents if the line is in the format of RegexHelper.commandsLine
+    //Returns the index at the end of the last match
     public int addCommandsLine(String commandsLineString)
     {
         Matcher anyCommand = Pattern.compile(RegexHelper.anyAtCommand).matcher(commandsLineString);   
@@ -133,6 +138,7 @@ public class ParsedLine
         }
         return endIndex;
     }
+    //Adds linecomponents if the line is in the format of RegexHelper.sendMessage
     public void addSendMessage(String sendMessage)
     {
         Matcher sendMessageMatcher = Pattern.compile(RegexHelper.sendMessage).matcher(sendMessage);

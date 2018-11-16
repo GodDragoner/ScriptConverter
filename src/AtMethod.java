@@ -1,4 +1,6 @@
 
+//Represents the beginning of a new method or the location
+//for a goto statement in TAI
 public class AtMethod extends LineComponent
 {
     public String methodName;

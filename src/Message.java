@@ -2,6 +2,9 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+//This represents a message. It stores an arraylist of message components because
+//a message can have plain text it outputs (a phrase) or it can use random text (RT)
+//or several other functions
 public class Message extends LineComponent
 {
     public ArrayList<LineComponent> messageComponents;
