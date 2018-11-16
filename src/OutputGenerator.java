@@ -79,7 +79,7 @@ public class OutputGenerator
         }
         else if (component instanceof AtCommand)
         {
-            //pushCommand((AtCommand) component);
+            pushCommand((AtCommand) component);
         }
         else if (component instanceof Message)
         {
@@ -106,8 +106,33 @@ public class OutputGenerator
     //javascript/TAJ version of the command
     private void pushCommand(AtCommand command)
     {
-        //JUST HERE TEMPORARILY FOR TESTING
-        pushLine(command.toString());
+        String commandName = command.commandName;
+        ArrayList<String> parameters = command.parameters;
+        if (parameters.size() == 0)
+        {
+            //Commands without parameters
+            switch (commandName.toLowerCase())
+            {
+                case "rapidcodeon":
+                    break;
+                case "nullresponse":
+                    break;
+                    
+                default:
+                    pushLine(command.toString());
+                    break;
+            }
+        }
+        else
+        {
+            switch (commandName.toLowerCase())
+            {
+                
+                default:
+                    pushLine(command.toString());
+                    break;
+            }
+        }
     }
     
     //Adds a response
