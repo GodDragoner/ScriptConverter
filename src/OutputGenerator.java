@@ -7,9 +7,11 @@ public class OutputGenerator
     
     private ArrayList<String> outputJavascript;
     private ParsedLine thisParsedLine;
+    private int indexInCurrentLine;
     private int currentLineIndex;
     
     private Stack<String> scoping;
+    private int answerCounter = 0;
     
     public OutputGenerator(ArrayList<ParsedLine> input)
     {
@@ -24,11 +26,20 @@ public class OutputGenerator
     public String generateOutput()
     {
         pushFunction("main");
-        
+        currentLineIndex = 0;
         for (ParsedLine parsedLine: parsedInput)
         {
+            if (!parsedLine.thisRegex.equals(ParsedLine.lineRegex.RESPONSE) && scoping.peek().contains("response"))
+            {
+                popScoping();
+            }
+            if (parsedLine.lineComponents.size() > 1 && parsedLine.lineComponents.get(0) instanceof AtCommand && ((AtCommand)parsedLine.lineComponents.get(0)).commandName.equalsIgnoreCase("differentanswer"))
+            {
+                currentLineIndex++;
+                continue;
+            }
             thisParsedLine = parsedLine;
-            currentLineIndex = 0;
+            indexInCurrentLine = 0;
             if (parsedLine.thisRegex.equals(ParsedLine.lineRegex.UNINTERPRETED))
             {
                 //pushLine("--UNINTERPRETED LINE:" + parsedLine.line);
@@ -41,9 +52,10 @@ public class OutputGenerator
                 for (LineComponent lineComponent: parsedLine.lineComponents)
                 {
                     pushOutput(lineComponent);
-                    currentLineIndex++;
+                    indexInCurrentLine++;
                 }
             }
+            currentLineIndex++;
         }
         while (!scoping.isEmpty())
         {
@@ -77,6 +89,7 @@ public class OutputGenerator
         else if (component instanceof Response)
         {
             //pushLine("Response:" + ((Response) component).responses.toString());
+            pushResponse((Response) component);
         }
         else if (component instanceof ModifyCommand)
         {
@@ -97,25 +110,119 @@ public class OutputGenerator
         pushLine(command.toString());
     }
     
+    //Adds a response
+    private void pushResponse(Response response)
+    {
+        String outputResponse = "";
+        if (scoping.peek().equalsIgnoreCase("response:answer" + (answerCounter - 1)))
+        {
+            popScoping();
+            outputResponse += "else if (answer" + (answerCounter-1) + ".isLike(";
+        }
+        else
+        {
+            outputResponse += "if (answer" + (answerCounter-1) + ".isLike(";
+        }
+        for (int i = 0; i < response.responses.size(); i++)
+        {
+           outputResponse += "\"" + response.responses.get(i) + "\"";
+           if ((i+1) < response.responses.size())
+           {
+               outputResponse += ", ";
+           }
+        }
+        outputResponse += "))";
+        pushLine(outputResponse);
+        pushScoping("response:answer" + (answerCounter - 1));
+    }
+    
     //This is where messages will get pushed and output generated for messages
     private void pushMessage(Message message)
     {
+        if (message.messageComponents.get(0).content.equals("Are you horny already?"))
+        {
+            System.out.println("test");
+        }
+        boolean gettingInput = false;
         //Check the command before this message and if its SystemMessage make this a SMessage instead of a CMessage
         String outputMessage = "";
-        if (currentLineIndex >= 1)
+        if (indexInCurrentLine >= 1)
         {
-            if (thisParsedLine.lineComponents.get(currentLineIndex - 1) instanceof AtCommand && ((AtCommand) thisParsedLine.lineComponents.get(currentLineIndex - 1)).commandName.equalsIgnoreCase("systemmessage"))
+            if (thisParsedLine.lineComponents.get(indexInCurrentLine - 1) instanceof AtCommand && ((AtCommand) thisParsedLine.lineComponents.get(indexInCurrentLine - 1)).commandName.equalsIgnoreCase("systemmessage"))
             {
-                outputMessage += "SMessage(";
+                
+                if (scoping.peek().equalsIgnoreCase("differentanswer"))
+                {
+                    outputMessage += "answer" + (answerCounter - 1) + " = getInput(";
+                }
+                //Here, we check if the next line is a response. If so this needs to be getting input instead of sending a message
+                else if (parsedInput.size() > currentLineIndex + 1)
+                {
+                    ParsedLine tempLine = parsedInput.get(currentLineIndex + 1);
+                    if (tempLine.lineComponents.size() >= 2)
+                    {
+                        if (tempLine.thisRegex.equals(ParsedLine.lineRegex.RESPONSE) && !thisParsedLine.thisRegex.equals(ParsedLine.lineRegex.RESPONSE))
+                        {
+                            outputMessage += "let answer" + answerCounter + " = getInput(";
+                            gettingInput = true;
+                            answerCounter++;
+                        }
+                        else
+                        {
+                            outputMessage += "SMessage(";
+                        }
+                    }
+                    else
+                    {
+                        outputMessage += "SMessage(";
+                    }
+                }
+                else
+                {
+                    outputMessage += "SMessage(";
+                }
+            }
+            else
+            {
+                if (scoping.peek().equalsIgnoreCase("differentanswer"))
+                {
+                    outputMessage += "answer" + (answerCounter - 1) + " = getInput(";
+                }
+                else
+                {
+                    outputMessage += "CMessage(";
+                }
+            }
+        }
+        else
+        {
+            //Here, we check if the next line is a response. If so this needs to be getting input instead of sending a message
+            if (parsedInput.size() > currentLineIndex + 1)
+            {
+                ParsedLine tempLine = parsedInput.get(currentLineIndex + 1);
+                if (tempLine.lineComponents.size() >= 1)
+                {
+                    if (tempLine.thisRegex.equals(ParsedLine.lineRegex.RESPONSE))
+                    {
+                        outputMessage += "let answer" + answerCounter + " = getInput(";
+                        gettingInput = true;
+                        answerCounter++;
+                    }
+                    else
+                    {
+                        outputMessage += "CMessage(";
+                    }
+                    //if (tempLine.lineComponents.get(0) instanceof AtCommand && ((AtCommand)tempLine.lineComponents.get(0)).commandName.equalsIgnoreCase("differentanswer"))
+                }
+                else
+                {
+                    outputMessage += "CMessage(";
+                }
             }
             else
             {
                 outputMessage += "CMessage(";
             }
-        }
-        else
-        {
-            outputMessage += "CMessage(";
         }
         int counter = 0;
         for (LineComponent comp: message.messageComponents)
@@ -167,6 +274,55 @@ public class OutputGenerator
         }
         outputMessage += ");";
         pushLine(outputMessage);
+        if (gettingInput)
+        {
+            int tempIndex = currentLineIndex + 1;
+            ArrayList<String> allResponses = new ArrayList<String>();
+            while (parsedInput.get(tempIndex).thisRegex.equals(ParsedLine.lineRegex.RESPONSE))
+            {
+                allResponses.addAll(((Response)parsedInput.get(tempIndex).lineComponents.get(0)).responses);
+                tempIndex++;
+                if (tempIndex >= parsedInput.size())
+                {
+                    System.out.println("returning because hit end of file");
+                    //This is the case where we hit the end of the file and still haven't found a line that isnt a response
+                    return;
+                }
+            }
+            if (parsedInput.get(tempIndex).lineComponents.size() > 1 && parsedInput.get(tempIndex).lineComponents.get(0) instanceof AtCommand)
+            {
+                if (((AtCommand)parsedInput.get(tempIndex).lineComponents.get(0)).commandName.equalsIgnoreCase("differentanswer"))
+                {
+                    ParsedLine differentAnswerLine = parsedInput.get(tempIndex);
+                    String differentAnswerOutput = "while (!(";
+                    for (int i = 0; i < allResponses.size(); i++)
+                    {
+                        differentAnswerOutput += "answer" + (answerCounter-1) + ".isLike(\"" + allResponses.get(i) + "\")";
+                        if (i + 1 < allResponses.size())
+                        {
+                            differentAnswerOutput += " || ";
+                        }
+                    }
+                    differentAnswerOutput += "))";
+                    pushLine(differentAnswerOutput);
+                    pushScoping("differentAnswer");
+                    /*for (LineComponent lineComponent: parsedLine.lineComponents)
+                    {
+                        pushOutput(lineComponent);
+                        indexInCurrentLine++;
+                    }*/
+                    indexInCurrentLine = 1;
+                    thisParsedLine = differentAnswerLine;
+                    for (int i = 1; i < differentAnswerLine.lineComponents.size(); i++)
+                    {
+                        pushOutput(differentAnswerLine.lineComponents.get(i));
+                        indexInCurrentLine++;
+                    }
+                    popScoping();
+                    
+                }
+            }
+        }
     }
     
     
@@ -180,6 +336,7 @@ public class OutputGenerator
         }
         pushLine("function " + functionName + "()");
         pushScoping("function:" + functionName);
+        answerCounter = 0;
     }
     
     //Start a new scope
