@@ -30,7 +30,9 @@ public class AtCommand extends LineComponent
         while (argumentMatcher.find())
         {
             //System.out.println("Argument:" + argumentMatcher.group());
-            parameters.add(StringHelper.removeChars(argumentMatcher.group(), "[", "]", "(",")",","));
+            String thisParam = argumentMatcher.group().replaceAll("\\\\", "\" + java.io.File.separator + \"");
+            thisParam = thisParam.replaceAll("/", "\" + java.io.File.separator + \"");
+            parameters.add(StringHelper.removeChars(thisParam, "[", "]", "(",")",","));
         }
         /*System.out.println("CommandName:" + this.commandName);
         for (String thisParam: parameters)

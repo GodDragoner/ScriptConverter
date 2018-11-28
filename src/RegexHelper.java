@@ -3,9 +3,9 @@
 //for TAI
 public class RegexHelper
 {
-    //This top block is outdated
+    //This top block is outdated 
     
-    /*public static final String messageChar = "\\w|\\.|,|-|<|>|#|'|\\/|\\s|\\/|!|\\\\|\\.|\\?|(:\\))|(:\\()";
+    public static final String messageChar = "\\w|\\.|,|-|<|>|#|'|\\/|\\s|\\/|!|\\\\|\\.|\\?|(:\\))|(:\\()";
     public static final String atGotoFunction = "@(\\w+\\d*)(\\((((" + messageChar + "|_|\\*)+)\\s*,?)+\\))\\s*";
     public static final String atBracesFunction = "@(\\w+\\d*)(\\[(\\w|\\s|'|_|\\d|\\/|\\\\|\\.)+\\])\\s*";
     public static final String atFunction = "@(\\w+\\d*)";
@@ -17,7 +17,8 @@ public class RegexHelper
     public static final String ifAtFunction = atFunction + "\\s*" + "(\\s*(" + RegexHelper.messageChar + ")+\\s*)" + "\\s*([" + RegexHelper.atGotoFunction + "|" + RegexHelper.atFunctionWithParams + "|" + 
             RegexHelper.atSetFunction + "|" + RegexHelper.atBracesFunction + "|" + RegexHelper.atFunction + "|" + RegexHelper.atIfFunction + "|" + RegexHelper.atChangeVarFunction + "])+\\s*";
     public static final String allAtCommands = "\\s*([" + RegexHelper.atGotoFunction + "|" + RegexHelper.atFunctionWithParams + "|" + RegexHelper.atSetFunction + "|" + RegexHelper.atBracesFunction + "|" + RegexHelper.atFunction + "|" + RegexHelper.atIfFunction + "|" + RegexHelper.atChangeVarFunction + "])+\\s*";
-    public static final String hashCommand = "#()";*/
+    public static final String hashCommand = "#()";
+    
     
     public static final String punctuationInsideWord = "('|\\(|\\)|\\/|\\*|\\.\\.\\.|-)";
     public static final String letter = "\\w";

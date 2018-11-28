@@ -36,6 +36,10 @@ public class OutputGenerator
             {
                 popScoping();
             }
+            if (scoping.peek().contains("if"))
+            {
+                popScoping();
+            }
             if (parsedLine.lineComponents.size() > 1 && parsedLine.lineComponents.get(0) instanceof AtCommand && ((AtCommand)parsedLine.lineComponents.get(0)).commandName.equalsIgnoreCase("differentanswer"))
             {
                 currentLineIndex++;
@@ -121,7 +125,11 @@ public class OutputGenerator
             {
                 case "rapidcodeon":
                     break;
+                case "rapidcodeoff":
+                    break;
                 case "nullresponse":
+                    break;
+                case "systemmessage":
                     break;
                     
                 default:
@@ -136,11 +144,165 @@ public class OutputGenerator
             //push the line with the converted javascript version
             //switching on the command name and then using the
             //parameters array list to access the command's parameters
+            //eventually alphabetize these for convenience of finding them
             switch (commandName.toLowerCase())
             {
-                
+                case "call":
+                    pushLine("run(\"" + parameters.get(0) + "\");");
+                    pushLine("return;");
+                    break;  
+                case "goto":
+                    pushLine(parameters.get(0).replaceAll(" ", "_") + "();");
+                    pushLine("return;");
+                    break;  
+                case "deletevar":
+                    for (int i = 0; i < parameters.size(); i++)
+                    {
+                        pushLine("delVar(\"" + parameters.get(i) + "\");");
+                    }
+                    break;
+                case "deleteflag":
+                    for (int i = 0; i < parameters.size(); i++)
+                    {
+                        pushLine("delVar(\"" + parameters.get(i) + "\");");
+                    }
+                    break;
+                case "flag":
+                    String toOutput = "if(";
+                    for (int i = 0; i < parameters.size(); i++)
+                    {
+                        if (i > 0)
+                        {
+                            toOutput += " && ";
+                        }
+                        toOutput += "getVar(\"" + parameters.get(i) + "\", false)";
+                    }
+                    toOutput += ")";
+                    pushLine(toOutput);
+                    pushScoping("if:flag");
+                    break;
+                case "notflag":
+                    String toOutput2 = "if(";
+                    for (int i = 0; i < parameters.size(); i++)
+                    {
+                        if (i > 0)
+                        {
+                            toOutput2 += " && ";
+                        }
+                        toOutput2 += "!getVar(\"" + parameters.get(i) + "\", false)";
+                    }
+                    toOutput2 += ")";
+                    pushLine(toOutput2);
+                    pushScoping("if:notflag");
+                    break;
+                case "setflag":
+                    for (int i = 0; i < parameters.size(); i++)
+                    {
+                        pushLine("setVar(\"" + parameters.get(i) + "\", true);");
+                    }
+                    break;
+                case "setdate":
+                    String toOutput3 = "setDate(\"" + parameters.get(0) + "\")";
+                    String timeAmount;
+                    if (parameters.get(1).toLowerCase().contains("seconds"))
+                    {
+                        timeAmount = parameters.get(1).toLowerCase().replaceAll("seconds", "").trim();
+                        if (!timeAmount.equals("0"))
+                        {
+                            toOutput3 += ".addSeconds(" + timeAmount + ");";
+                        }
+                        else
+                        {
+                            toOutput3 += ";";
+                        }
+                    }
+                    else if (parameters.get(1).toLowerCase().contains("minutes"))
+                    {
+                        timeAmount = parameters.get(1).toLowerCase().replaceAll("minutes", "").trim();
+                        if (!timeAmount.equals("0"))
+                        {
+                            toOutput3 += ".addMinutes(" + timeAmount + ");";
+                        }
+                        else
+                        {
+                            toOutput3 += ";";
+                        }
+                    }
+                    else if (parameters.get(1).toLowerCase().contains("hours"))
+                    {
+                        timeAmount = parameters.get(1).toLowerCase().replaceAll("hours", "").trim();
+                        if (!timeAmount.equals("0"))
+                        {
+                            toOutput3 += ".addHours(" + timeAmount + ");";
+                        }
+                        else
+                        {
+                            toOutput3 += ";";
+                        }
+                    }
+                    else if (parameters.get(1).toLowerCase().contains("days"))
+                    {
+                        timeAmount = parameters.get(1).toLowerCase().replaceAll("days", "").trim();
+                        if (!timeAmount.equals("0"))
+                        {
+                            toOutput3 += ".addDays(" + timeAmount + ");";
+                        }
+                        else
+                        {
+                            toOutput3 += ";";
+                        }
+                    }
+                    else if (parameters.get(1).toLowerCase().contains("weeks"))
+                    {
+                        timeAmount = parameters.get(1).toLowerCase().replaceAll("weeks", "").trim();
+                        if (!timeAmount.equals("0"))
+                        {
+                            toOutput3 += ".addDays(" + timeAmount + " * 7);";
+                        }
+                        else
+                        {
+                            toOutput3 += ";";
+                        }
+                    }
+                    else if (parameters.get(1).toLowerCase().contains("months"))
+                    {
+                        timeAmount = parameters.get(1).toLowerCase().replaceAll("months", "").trim();
+                        if (!timeAmount.equals("0"))
+                        {
+                            toOutput3 += ".addMonths(" + timeAmount + ");";
+                        }
+                        else
+                        {
+                            toOutput3 += ";";
+                        }
+                    }
+                    else if (parameters.get(1).toLowerCase().contains("years"))
+                    {
+                        timeAmount = parameters.get(1).toLowerCase().replaceAll("years", "").trim();
+                        if (!timeAmount.equals("0"))
+                        {
+                            toOutput3 += ".addYears(" + timeAmount + ");";
+                        }
+                        else
+                        {
+                            toOutput3 += ";";
+                        }
+                    }
+                    pushLine(toOutput3);
+                    break;
                 default:
-                    pushLine(command.toString());
+                    if (commandName.toLowerCase().contains("chance"))
+                    {
+                        String chanceAmount = StringHelper.removeChars(commandName.toLowerCase(), "chance");
+                        pushLine("if (randomInteger(1, 100) <= " + chanceAmount + ")");
+                        pushScoping("if:chance");
+                        System.out.println("Parameters:" + parameters.get(0));
+                        pushCommand(new AtCommand("@Goto(" + parameters.get(0) + ")"));
+                        popScoping();
+                    }
+                    else {
+                        pushLine(command.toString());
+                    }
                     break;
             }
         }

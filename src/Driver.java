@@ -29,7 +29,7 @@ public class Driver
                 output.createNewFile();
             }
             BufferedWriter writer = new BufferedWriter(new FileWriter(output));
-            writer.write(outputBuffer.toString());
+            //writer.write(outputBuffer.toString());
             writer.flush();
             writer.close();
         }
