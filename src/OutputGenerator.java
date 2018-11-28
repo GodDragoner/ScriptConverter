@@ -123,6 +123,18 @@ public class OutputGenerator
             //push the line with the converted javascript version
             switch (commandName.toLowerCase())
             {
+                case "increaseorgasmchance":
+                    pushLine("increaseOrgasmChance(8);");
+                    break;
+                case "decreaseorgasmchance":
+                    pushLine("increaseOrgasmChance(-8);");
+                    break;
+                case "increaseruinchance":
+                    pushLine("increaseRuinChance(8);");
+                    break;
+                case "decreaseruinchance":
+                    pushLine("increaseRuinChance(-8);");
+                    break;
                 case "rapidcodeon":
                     break;
                 case "rapidcodeoff":
@@ -131,9 +143,40 @@ public class OutputGenerator
                     break;
                 case "systemmessage":
                     break;
-                    
+                case "showsoftcoreimage":
+                    pushLine("showTaggedImage(4, [\"softcore\"]);");
+                    break;
+                case "showblowjobimage":
+                    pushLine("showTaggedImage(4, [\"blowjob\"]);");
+                    break;
+                case "showlesbianimage":
+                    pushLine("showTaggedImage(4, [\"lesbian\"]);");
+                    break;
+                case "showhardcoreimage":
+                    pushLine("showTaggedImage(4, [\"hardcore\"]);");
+                    break;
+                case "playvideo":
+                    pushLine("playVideo(\"Videos\" + java.io.File.separator + \"*.*\");");
+                    break;
+                case "end":
+                    pushLine("return;");
+                    break;
+                case "startstroking":
+                    pushLine("Stroking");
+                    break;
+                case "moodup":
+                    pushLine("increaseAnger(3)");
+                    break;
+                //TODO THIS MIGHT NEED TO BE CHANGED TO SOMETHING ELSE???
+                case "dommelevelup":
+                    pushLine("increaseAnger(4)");
+                    break;
+                //TODO THIS MIGHT NEED TO BE CHANGED TO SOMETHING ELSE???
+                case "apathylevelup":
+                    pushLine("increaseAnger(4)");
+                    break;
                 default:
-                    pushLine(command.toString());
+                    pushLine("--" + command.toString());
                     break;
             }
         }
@@ -151,10 +194,30 @@ public class OutputGenerator
                     pushLine("run(\"" + parameters.get(0) + "\");");
                     pushLine("return;");
                     break;  
+                case "callreturn":
+                    pushLine("run(\"" + parameters.get(0) + "\");");
+                    break;  
+                //needs to execute commands after goto before
                 case "goto":
                     pushLine(parameters.get(0).replaceAll(" ", "_") + "();");
                     pushLine("return;");
                     break;  
+                case "checkflag":
+                    String toOutput = "if(";
+                    for (int i = 0; i < parameters.size(); i++)
+                    {
+                        if (i > 0)
+                        {
+                            toOutput += " && ";
+                        }
+                        toOutput += "getVar(\"" + parameters.get(i) + "\", false)";
+                    }
+                    toOutput += ")";
+                    pushLine(toOutput);
+                    pushScoping("if:checkflag");
+                    pushCommand(new AtCommand("@Goto(" + parameters.get(0) + ")"));
+                    popScoping();
+                    break;
                 case "deletevar":
                     for (int i = 0; i < parameters.size(); i++)
                     {
@@ -168,18 +231,21 @@ public class OutputGenerator
                     }
                     break;
                 case "flag":
-                    String toOutput = "if(";
+                    String toOutput4 = "if(";
                     for (int i = 0; i < parameters.size(); i++)
                     {
                         if (i > 0)
                         {
-                            toOutput += " && ";
+                            toOutput4 += " && ";
                         }
-                        toOutput += "getVar(\"" + parameters.get(i) + "\", false)";
+                        toOutput4 += "getVar(\"" + parameters.get(i) + "\", false)";
                     }
-                    toOutput += ")";
-                    pushLine(toOutput);
-                    pushScoping("if:flag");
+                    toOutput4 += ")";
+                    pushLine(toOutput4);
+                    pushScoping("if:flag");             
+                    break;
+                case "interrupt":
+                    pushCommand(new AtCommand("@callreturn(Interrupt/" + parameters.get(0) + ")"));
                     break;
                 case "notflag":
                     String toOutput2 = "if(";
@@ -199,6 +265,12 @@ public class OutputGenerator
                     for (int i = 0; i < parameters.size(); i++)
                     {
                         pushLine("setVar(\"" + parameters.get(i) + "\", true);");
+                    }
+                    break;
+                case "tempflag":
+                    for (int i = 0; i < parameters.size(); i++)
+                    {
+                        pushLine("setTempVar(\"" + parameters.get(i) + "\", true);");
                     }
                     break;
                 case "setdate":
@@ -290,18 +362,26 @@ public class OutputGenerator
                     }
                     pushLine(toOutput3);
                     break;
+                case "showimage":
+                    pushLine("getLocalTeasePicture(\"images\" + java.io.File.separator + \"" + parameters.get(0) + "\");");
+                    break;
+                case "playaudio":
+                    pushLine("playAudio(\"Audio\" + java.io.File.separator + \"" + parameters.get(0) + "\");");
+                    break;
+                case "wait":
+                    pushLine("Wait(" + parameters.get(0) + ");");
+                    break;
                 default:
                     if (commandName.toLowerCase().contains("chance"))
                     {
                         String chanceAmount = StringHelper.removeChars(commandName.toLowerCase(), "chance");
                         pushLine("if (randomInteger(1, 100) <= " + chanceAmount + ")");
                         pushScoping("if:chance");
-                        System.out.println("Parameters:" + parameters.get(0));
                         pushCommand(new AtCommand("@Goto(" + parameters.get(0) + ")"));
                         popScoping();
                     }
                     else {
-                        pushLine(command.toString());
+                        pushLine("--" + command.toString());
                     }
                     break;
             }
@@ -338,10 +418,6 @@ public class OutputGenerator
     //Also includes the code to do a getresponse
     private void pushMessage(Message message)
     {
-        if (message.messageComponents.get(0).content.equals("Are you horny already?"))
-        {
-            System.out.println("test");
-        }
         boolean gettingInput = false;
         //Check the command before this message and if its SystemMessage make this a SMessage instead of a CMessage
         String outputMessage = "";
