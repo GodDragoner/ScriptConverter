@@ -32,6 +32,7 @@ public class AtCommand extends LineComponent
             //System.out.println("Argument:" + argumentMatcher.group());
             String thisParam = argumentMatcher.group().replaceAll("\\\\", "\" + java.io.File.separator + \"");
             thisParam = thisParam.replaceAll("/", "\" + java.io.File.separator + \"");
+            thisParam = thisParam.replaceAll(".txt", ".js");
             parameters.add(StringHelper.removeChars(thisParam, "[", "]", "(",")",","));
         }
         /*System.out.println("CommandName:" + this.commandName);

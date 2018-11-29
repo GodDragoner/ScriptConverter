@@ -16,6 +16,8 @@ public class OutputGenerator
     private Stack<String> scoping;
     private int answerCounter = 0;
     
+    private boolean breakCurrentLine = false;
+    
     public OutputGenerator(ArrayList<ParsedLine> input)
     {
         this.parsedInput = input;
@@ -32,7 +34,8 @@ public class OutputGenerator
         currentLineIndex = 0;
         for (ParsedLine parsedLine: parsedInput)
         {
-            if (!parsedLine.thisRegex.equals(ParsedLine.lineRegex.RESPONSE) && scoping.peek().contains("response"))
+            if (!parsedLine.thisRegex.equals(ParsedLine.lineRegex.RESPONSE) && scoping.peek().contains("response") &&
+                    !(parsedLine.lineComponents.get(0) instanceof AtCommand && ((AtCommand) parsedLine.lineComponents.get(0)).commandName.toLowerCase().contains("response")))
             {
                 popScoping();
             }
@@ -45,11 +48,16 @@ public class OutputGenerator
                 currentLineIndex++;
                 continue;
             }
+            else if (parsedLine.lineComponents.size() > 2 && parsedLine.lineComponents.get(1) instanceof AtCommand && ((AtCommand)parsedLine.lineComponents.get(1)).commandName.equalsIgnoreCase("differentanswer"))
+            {
+                currentLineIndex++;
+                continue;
+            }
             thisParsedLine = parsedLine;
             indexInCurrentLine = 0;
             if (parsedLine.thisRegex.equals(ParsedLine.lineRegex.UNINTERPRETED))
             {
-                //pushLine("--UNINTERPRETED LINE:" + parsedLine.line);
+                pushLine("--UNINTERPRETED LINE:" + parsedLine.line);
             }
             else if (parsedLine.thisRegex.equals(ParsedLine.lineRegex.BLANK))
             {
@@ -58,6 +66,11 @@ public class OutputGenerator
             else {
                 for (LineComponent lineComponent: parsedLine.lineComponents)
                 {
+                    if (breakCurrentLine)
+                    {
+                        breakCurrentLine = false;
+                        break;
+                    }
                     pushOutput(lineComponent);
                     indexInCurrentLine++;
                 }
@@ -100,11 +113,11 @@ public class OutputGenerator
         }
         else if (component instanceof ModifyCommand)
         {
-            //pushLine("Modify:" + ((ModifyCommand) component).toString());
+            pushModify((ModifyCommand) component);
         }
         else if (component instanceof IfStatement)
         {
-            //pushLine("IfStatement:" + ((IfStatement) component).toString());
+            pushLine("IfStatement:" + ((IfStatement) component).toString());
         }
     }
     
@@ -143,6 +156,8 @@ public class OutputGenerator
                     break;
                 case "systemmessage":
                     break;
+                case "differentanswer":
+                    break;
                 case "showsoftcoreimage":
                     pushLine("showTaggedImage(4, [\"softcore\"]);");
                     break;
@@ -162,7 +177,7 @@ public class OutputGenerator
                     pushLine("return;");
                     break;
                 case "startstroking":
-                    pushLine("Stroking");
+                    pushLine("Stroking();");
                     break;
                 case "moodup":
                     pushLine("increaseAnger(3)");
@@ -191,16 +206,78 @@ public class OutputGenerator
             switch (commandName.toLowerCase())
             {
                 case "call":
+                    int temporaryLineCounter = indexInCurrentLine;
+                    pushRestOfLine();
+                    indexInCurrentLine = temporaryLineCounter;
                     pushLine("run(\"" + parameters.get(0) + "\");");
                     pushLine("return;");
                     break;  
                 case "callreturn":
+                    int temporaryLineCounter2 = indexInCurrentLine;
+                    pushRestOfLine();
+                    indexInCurrentLine = temporaryLineCounter2;
                     pushLine("run(\"" + parameters.get(0) + "\");");
                     break;  
                 //needs to execute commands after goto before
                 case "goto":
-                    pushLine(parameters.get(0).replaceAll(" ", "_") + "();");
-                    pushLine("return;");
+                    int temporaryLineCounter3 = indexInCurrentLine;
+                    pushRestOfLine();
+                    indexInCurrentLine = temporaryLineCounter3;
+                    if (parameters.size() == 1)
+                    {
+                        pushLine(parameters.get(0).replaceAll(" ", "_") + "();");
+                        pushLine("return;");
+                    }
+                    else {
+                        String output = "switch(random(";
+                        for (int i = 0; i < parameters.size(); i++)
+                        {
+                            if (i != 0)
+                            {
+                                output += ", ";
+                            }
+                            output += "\"" + parameters.get(i) + "\"";
+                        }
+                        output += "))";
+                        pushLine(output);
+                        pushScoping("goto:switch");
+                        for (int i = 0; i < parameters.size(); i++)
+                        {
+                            pushLine("case \"" + parameters.get(i) + "\":");
+                            pushLine(parameters.get(i).replaceAll(" ", "_") + "();");
+                            pushLine("break;");
+                        }
+                        popScoping();
+                    }
+                    break; 
+                    //This is just called by other commands
+                case "goto2":
+                    if (parameters.size() == 1)
+                    {
+                        pushLine(parameters.get(0).replaceAll(" ", "_") + "();");
+                        pushLine("return;");
+                    }
+                    else {
+                        String output = "switch(random(";
+                        for (int i = 0; i < parameters.size(); i++)
+                        {
+                            if (i != 0)
+                            {
+                                output += ", ";
+                            }
+                            output += "\"" + parameters.get(i) + "\"";
+                        }
+                        output += "))";
+                        pushLine(output);
+                        pushScoping("goto:switch");
+                        for (int i = 0; i < parameters.size(); i++)
+                        {
+                            pushLine("case: \"" + parameters.get(i) + "\"");
+                            pushLine(parameters.get(i).replaceAll(" ", "_") + "();");
+                            pushLine("break;");
+                        }
+                        popScoping();
+                    }
                     break;  
                 case "checkflag":
                     String toOutput = "if(";
@@ -215,7 +292,7 @@ public class OutputGenerator
                     toOutput += ")";
                     pushLine(toOutput);
                     pushScoping("if:checkflag");
-                    pushCommand(new AtCommand("@Goto(" + parameters.get(0) + ")"));
+                    pushCommand(new AtCommand("@Goto2(" + parameters.get(0) + ")"));
                     popScoping();
                     break;
                 case "deletevar":
@@ -244,7 +321,45 @@ public class OutputGenerator
                     pushLine(toOutput4);
                     pushScoping("if:flag");             
                     break;
+                case "responseyes":
+                    String outputResponse = "";
+                    if (scoping.peek().equalsIgnoreCase("response:answer" + (answerCounter - 1)))
+                    {
+                        popScoping();
+                        outputResponse += "else if (answer" + (answerCounter-1) + ".isLike(\"yes\", \"yea\", \"yep\"))";
+                    }
+                    else
+                    {
+                        outputResponse += "if (answer" + (answerCounter-1) + ".isLike(\"yes\", \"yea\", \"yep\"))";
+                    }
+                    pushLine(outputResponse);
+                    pushScoping("response:answer" + (answerCounter-1));
+                    pushCommand(new AtCommand("@goto2(" + parameters.get(0) + ")"));
+                    
+                    break;
+                case "responseno":
+                    String outputResponse2 = "";
+                    if (scoping.peek().equalsIgnoreCase("response:answer" + (answerCounter - 1)))
+                    {
+                        popScoping();
+                        outputResponse2 += "else if (answer" + (answerCounter-1) + ".isLike(\"no\", \"nope\", \"nah\", \"not\"))";
+                    }
+                    else
+                    {
+                        outputResponse2 += "if (answer" + (answerCounter-1) + ".isLike(\"no\", \"nope\", \"nah\", \"not\"))";
+                    }
+                    pushLine(outputResponse2);
+                    pushScoping("response:answer" + (answerCounter-1));
+                    pushCommand(new AtCommand("@goto2(" + parameters.get(0) + ")"));
+                    
+                    break;
+                    //will probably implement this later. For now left out
+                case "removeteasetime":
+                    break;
                 case "interrupt":
+                    int temporaryLineCounter4 = indexInCurrentLine;
+                    pushRestOfLine();
+                    indexInCurrentLine = temporaryLineCounter4;
                     pushCommand(new AtCommand("@callreturn(Interrupt/" + parameters.get(0) + ")"));
                     break;
                 case "notflag":
@@ -377,7 +492,7 @@ public class OutputGenerator
                         String chanceAmount = StringHelper.removeChars(commandName.toLowerCase(), "chance");
                         pushLine("if (randomInteger(1, 100) <= " + chanceAmount + ")");
                         pushScoping("if:chance");
-                        pushCommand(new AtCommand("@Goto(" + parameters.get(0) + ")"));
+                        pushCommand(new AtCommand("@Goto2(" + parameters.get(0) + ")"));
                         popScoping();
                     }
                     else {
@@ -418,6 +533,11 @@ public class OutputGenerator
     //Also includes the code to do a getresponse
     private void pushMessage(Message message)
     {
+        if (message.content.contains("tingle"))
+        {
+            int x = 1;
+        }
+        
         boolean gettingInput = false;
         //Check the command before this message and if its SystemMessage make this a SMessage instead of a CMessage
         String outputMessage = "";
@@ -474,10 +594,21 @@ public class OutputGenerator
             //Here, we check if the next line is a response. If so this needs to be getting input instead of sending a message
             if (parsedInput.size() > currentLineIndex + 1)
             {
-                ParsedLine tempLine = parsedInput.get(currentLineIndex + 1);
-                if (tempLine.lineComponents.size() >= 1)
+                boolean answerSet = false;
+                if (thisParsedLine.lineComponents.size() > (indexInCurrentLine + 1) && thisParsedLine.lineComponents.get(indexInCurrentLine + 1) instanceof AtCommand && 
+                        (((AtCommand) thisParsedLine.lineComponents.get(indexInCurrentLine + 1)).commandName.toLowerCase().contains("responseyes") ||
+                                ((AtCommand) thisParsedLine.lineComponents.get(indexInCurrentLine + 1)).commandName.toLowerCase().contains("responseno")))
                 {
-                    if (tempLine.thisRegex.equals(ParsedLine.lineRegex.RESPONSE))
+                    outputMessage += "let answer" + answerCounter + " = getInput(";
+                    gettingInput = true;
+                    answerCounter++;
+                    answerSet = true;
+                }
+                ParsedLine tempLine = parsedInput.get(currentLineIndex + 1);
+                if (tempLine.lineComponents.size() >= 1 && ! answerSet)
+                {
+                    if (tempLine.thisRegex.equals(ParsedLine.lineRegex.RESPONSE) || (tempLine.lineComponents.get(0) instanceof AtCommand && 
+                            (((AtCommand)tempLine.lineComponents.get(0)).commandName.toLowerCase().contains("responseyes") || ((AtCommand)tempLine.lineComponents.get(0)).commandName.toLowerCase().contains("responseno"))))
                     {
                         outputMessage += "let answer" + answerCounter + " = getInput(";
                         gettingInput = true;
@@ -491,7 +622,10 @@ public class OutputGenerator
                 }
                 else
                 {
-                    outputMessage += "CMessage(";
+                    if (!answerSet)
+                    {
+                        outputMessage += "CMessage(";
+                    }
                 }
             }
             else
@@ -569,6 +703,42 @@ public class OutputGenerator
                 if (((AtCommand)parsedInput.get(tempIndex).lineComponents.get(0)).commandName.equalsIgnoreCase("differentanswer"))
                 {
                     ParsedLine differentAnswerLine = parsedInput.get(tempIndex);
+                    int temporaryLineCounter = indexInCurrentLine;
+                    pushRestOfLine();
+                    indexInCurrentLine = temporaryLineCounter;
+                    String differentAnswerOutput = "while (!(";
+                    for (int i = 0; i < allResponses.size(); i++)
+                    {
+                        differentAnswerOutput += "answer" + (answerCounter-1) + ".isLike(\"" + allResponses.get(i) + "\")";
+                        if (i + 1 < allResponses.size())
+                        {
+                            differentAnswerOutput += " || ";
+                        }
+                    }
+                    differentAnswerOutput += "))";
+                    pushLine(differentAnswerOutput);
+                    pushScoping("differentAnswer");
+                    
+                    indexInCurrentLine = 1;
+                    thisParsedLine = differentAnswerLine;
+                    for (int i = 1; i < differentAnswerLine.lineComponents.size(); i++)
+                    {
+                        pushOutput(differentAnswerLine.lineComponents.get(i));
+                        indexInCurrentLine++;
+                    }
+                    popScoping();
+                    
+                }
+            }
+            //This could probably be cleaner but it works. Handles the rare case that @differentanswer is the second command because systemmessage is first
+            if (parsedInput.get(tempIndex).lineComponents.size() > 1 && parsedInput.get(tempIndex).lineComponents.size() > 1 && parsedInput.get(tempIndex).lineComponents.get(1) instanceof AtCommand)
+            {
+                if (((AtCommand)parsedInput.get(tempIndex).lineComponents.get(1)).commandName.equalsIgnoreCase("differentanswer"))
+                {
+                    ParsedLine differentAnswerLine = parsedInput.get(tempIndex);
+                    int temporaryLineCounter = indexInCurrentLine;
+                    pushRestOfLine();
+                    indexInCurrentLine = temporaryLineCounter;
                     String differentAnswerOutput = "while (!(";
                     for (int i = 0; i < allResponses.size(); i++)
                     {
@@ -596,6 +766,21 @@ public class OutputGenerator
         }
     }
     
+    //used to push the rest of the line so this part can go at the end.
+    private void pushRestOfLine()
+    {
+        if (indexInCurrentLine == thisParsedLine.lineComponents.size() - 1)
+        {
+            return;
+        }
+        breakCurrentLine = true;
+        indexInCurrentLine++;
+        for (int i = indexInCurrentLine; i < thisParsedLine.lineComponents.size(); i++)
+        {
+            pushOutput(thisParsedLine.lineComponents.get(i));
+            indexInCurrentLine++;
+        }
+    }
     
     //Starts a new function with the given name
     private void pushFunction(String functionName)
@@ -608,6 +793,29 @@ public class OutputGenerator
         pushLine("function " + functionName + "()");
         pushScoping("function:" + functionName);
         answerCounter = 0;
+    }
+    
+    private void pushModify(ModifyCommand modifyCommand)
+    {
+        String commandName = modifyCommand.commandName;
+        String toOutput = "setVar(\"" + modifyCommand.toChange + "\", ";
+        for (int i = 0; i < modifyCommand.argumentsList.size(); i++)
+        {
+            if (StringHelper.isInteger(modifyCommand.argumentsList.get(i).trim()))
+            {
+                toOutput += modifyCommand.argumentsList.get(i).trim();
+            }
+            else
+            {
+                toOutput += "getVar(\"" + modifyCommand.argumentsList.get(i).trim() + "\", 0)";
+            }
+            if (modifyCommand.operatorsList.size() > i)
+            {
+                toOutput += " " + modifyCommand.operatorsList.get(i) + " ";
+            }
+        }
+        toOutput += ");";
+        pushLine(toOutput);
     }
     
     //Start a new scope. Use this every time an if or something similar is started
