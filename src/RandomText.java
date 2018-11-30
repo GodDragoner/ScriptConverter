@@ -38,11 +38,16 @@ public class RandomText extends LineComponent
     @Override
     public String toString()
     {
-        String toReturn = "";
-        for (Phrase phrase: phrases)
+        String toReturn = "RandomText(";
+        for (int i = 0; i < phrases.size(); i++)
         {
-            toReturn += "<" + phrase.toString() + ">";
+            toReturn += "\"" + phrases.get(i).toString() + "\"";
+            if (phrases.size() > (i + 1))
+            {
+                toReturn += ", ";
+            }
         }
-        return "RandomText:" + toReturn;
+        toReturn += ")";
+        return toReturn;
     }
 }

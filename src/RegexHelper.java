@@ -32,7 +32,7 @@ public class RegexHelper
     public static final String path = "((\\w)+(\\\\|/))+((\\w+\\s?)+|\\w*\\*)(\\.(\\w)+)?";
     public static final String hashFunction = "(#\\w+\\(\\s?\\w+(\\s?,\\s?\\w+\\s?)*\\))";
     public static final String variable = "#Var\\[\\s*\\w+\\s*\\]";
-    public static final String complexWord = "(" + argumentWord + "|" + vocab + "|" + hashFunction + ")";
+    public static final String complexWord = "(" + hashFunction + "|" + argumentWord + "|" + vocab + ")";
     
     public static final String argument = "(((" + complexWord + "\\s?" + lessInclusivePunctuation + ")((\\s|-|\\.\\.\\.)(" + complexWord + "\\s?" + lessInclusivePunctuation + "))*)|" + path + ")";
     public static final String operator = "(\\+|-|\\/|\\*)";

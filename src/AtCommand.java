@@ -2,6 +2,8 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javafx.scene.shape.Line;
+
 
 //An AtCommand is a command in the original TeaseAI
 //An example AtCommand could be @RapidTextOn or @Goto(AV_DecOrg)
@@ -11,13 +13,14 @@ import java.util.regex.Pattern;
 public class AtCommand extends LineComponent
 {
     public String commandName;
-    public ArrayList<String> parameters;
+    public ArrayList<LineComponent> parameters;
     public AtCommand(String content)
     {
         super(content);
-        parameters = new ArrayList<String>();
+        parameters = new ArrayList<LineComponent>();
 
-        String argumentRegex = "((\\(|\\[)|\\s?)(\\s?" + RegexHelper.argument + "\\s?)((\\)|\\])|\\s?,)";
+        String argumentRegex = "(?<=(\\(|\\[)|\\s?)(\\s?" + RegexHelper.hashFunction + "|" + RegexHelper.argument + "\\s?)(?=(\\)|\\])|\\s?,)";
+        //String argumentRegex = RegexHelper.hashFunction;
         
         Matcher commandNameMatcher = Pattern.compile(RegexHelper.atCommandSimple).matcher(content);
         Matcher argumentMatcher = Pattern.compile(argumentRegex).matcher(content);
@@ -29,17 +32,32 @@ public class AtCommand extends LineComponent
         }
         while (argumentMatcher.find())
         {
-            //System.out.println("Argument:" + argumentMatcher.group());
-            String thisParam = argumentMatcher.group().replaceAll("\\\\", "\" + java.io.File.separator + \"");
-            thisParam = thisParam.replaceAll("/", "\" + java.io.File.separator + \"");
-            thisParam = thisParam.replaceAll(".txt", ".js");
-            parameters.add(StringHelper.removeChars(thisParam, "[", "]", "(",")",","));
+            String found = argumentMatcher.group().trim();
+            if (found.matches(RegexHelper.hashFunction))
+            {
+                parameters.add(new HashFunction(found));
+            }
+            else if (found.matches(RegexHelper.simplePhrase))
+            {
+                parameters.add(new Phrase(found));
+            }
+            else if (found.matches(RegexHelper.randomText))
+            {
+                parameters.add(new RandomText(found));
+            }
+            else if (found.matches(RegexHelper.formatter))
+            {
+                parameters.add(new Formatter(found));
+            }
+            else if (found.matches(RegexHelper.variable))
+            {
+                parameters.add(new Variable(found));
+            }
+            else if (found.matches(RegexHelper.path))
+            {
+                parameters.add(new Path(found));
+            }
         }
-        /*System.out.println("CommandName:" + this.commandName);
-        for (String thisParam: parameters)
-        {
-            System.out.println("Global param:" + thisParam);
-        }*/
     }
     @Override
     public String toString()
@@ -48,9 +66,9 @@ public class AtCommand extends LineComponent
         if (parameters.size() > 0)
         {
             toReturn += "(";
-            for (String param: parameters)
+            for (LineComponent param: parameters)
             {
-                toReturn += param + ",";
+                toReturn += param.toString() + ",";
             }
             toReturn = toReturn.substring(0, toReturn.length() - 1);
             toReturn += ")";

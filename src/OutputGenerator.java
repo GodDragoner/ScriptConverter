@@ -117,7 +117,7 @@ public class OutputGenerator
         }
         else if (component instanceof IfStatement)
         {
-            pushLine("IfStatement:" + ((IfStatement) component).toString());
+            pushIfStatement((IfStatement) component);
         }
     }
     
@@ -127,7 +127,7 @@ public class OutputGenerator
     private void pushCommand(AtCommand command)
     {
         String commandName = command.commandName;
-        ArrayList<String> parameters = command.parameters;
+        ArrayList<LineComponent> parameters = command.parameters;
         if (parameters.size() == 0)
         {
             //Commands without parameters
@@ -136,11 +136,36 @@ public class OutputGenerator
             //push the line with the converted javascript version
             switch (commandName.toLowerCase())
             {
+                case "afkon":
+                    pushLine("setAFK(true);");
+                    break;
+                case "afkoff":
+                    pushLine("setAFK(false);");
+                    break;
                 case "increaseorgasmchance":
                     pushLine("increaseOrgasmChance(8);");
                     break;
+                case "inchastity":
+                    pushLine("if (getVar(\"chastityon\", false))");
+                    pushScoping("if:inchastity");             
+                    break;
+                case "badmood":
+                    pushLine("if (getApathyMoodIndex() >= 75)");
+                    pushScoping("if:badmood");             
+                    break;
+                case "goodmood":
+                    pushLine("if (getApathyMoodIndex() <= 25)");
+                    pushScoping("if:goodmood");             
+                    break;
+                case "neutralmood":
+                    pushLine("if (getApathyMoodIndex() > 25 && getApathyMoodIndex() < 75)");
+                    pushScoping("if:neutralmood");             
+                    break;
                 case "decreaseorgasmchance":
                     pushLine("increaseOrgasmChance(-8);");
+                    break;
+                case "edge":
+                    pushLine("startEdging();");
                     break;
                 case "increaseruinchance":
                     pushLine("increaseRuinChance(8);");
@@ -148,6 +173,8 @@ public class OutputGenerator
                 case "decreaseruinchance":
                     pushLine("increaseRuinChance(-8);");
                     break;
+                case "info":
+                    pushLine("//");
                 case "rapidcodeon":
                     break;
                 case "rapidcodeoff":
@@ -190,6 +217,19 @@ public class OutputGenerator
                 case "apathylevelup":
                     pushLine("increaseAnger(4)");
                     break;
+                    //TODO DON'T CURRENTLY KNOW WHAT TO DO HERE
+                case "newdommeslideshow":
+                    pushLine("//TODO: New domme slide show");
+                    break;
+                case "slideshowoff":
+                    pushLine("//TODO: Turn Slideshow off");
+                    break;
+                case "slideshowon":
+                    pushLine("//TODO: Turn Slideshow on");
+                    break;
+                case "unlockimages":
+                    pushLine("unlockImages();");
+                    break;
                 default:
                     pushLine("--" + command.toString());
                     break;
@@ -205,19 +245,30 @@ public class OutputGenerator
             //eventually alphabetize these for convenience of finding them
             switch (commandName.toLowerCase())
             {
+                case "slideshow":
+                    pushLine("//" + command.toString());
+                    break;
+                case "call2":
+                    pushLine("run(\"" + parameters.get(0).toString() + "\");");
+                    pushLine("return;");
+                    break;  
                 case "call":
                     int temporaryLineCounter = indexInCurrentLine;
                     pushRestOfLine();
                     indexInCurrentLine = temporaryLineCounter;
-                    pushLine("run(\"" + parameters.get(0) + "\");");
+                    pushLine("run(\"" + parameters.get(0).toString() + "\");");
                     pushLine("return;");
                     break;  
                 case "callreturn":
                     int temporaryLineCounter2 = indexInCurrentLine;
                     pushRestOfLine();
                     indexInCurrentLine = temporaryLineCounter2;
-                    pushLine("run(\"" + parameters.get(0) + "\");");
+                    pushLine("run(\"" + parameters.get(0).toString() + "\");");
                     break;  
+                case "callrandom":
+                    pushLine("run(\"" + parameters.get(0).toString() + "\" + java.io.File.separator + \"*.*\");");
+                    pushLine("return;");
+                    break;
                 //needs to execute commands after goto before
                 case "goto":
                     int temporaryLineCounter3 = indexInCurrentLine;
@@ -225,7 +276,7 @@ public class OutputGenerator
                     indexInCurrentLine = temporaryLineCounter3;
                     if (parameters.size() == 1)
                     {
-                        pushLine(parameters.get(0).replaceAll(" ", "_") + "();");
+                        pushLine(parameters.get(0).toString().replaceAll(" ", "_") + "();");
                         pushLine("return;");
                     }
                     else {
@@ -236,7 +287,7 @@ public class OutputGenerator
                             {
                                 output += ", ";
                             }
-                            output += "\"" + parameters.get(i) + "\"";
+                            output += "\"" + parameters.get(i).toString() + "\"";
                         }
                         output += "))";
                         pushLine(output);
@@ -244,7 +295,7 @@ public class OutputGenerator
                         for (int i = 0; i < parameters.size(); i++)
                         {
                             pushLine("case \"" + parameters.get(i) + "\":");
-                            pushLine(parameters.get(i).replaceAll(" ", "_") + "();");
+                            pushLine(parameters.get(i).toString().replaceAll(" ", "_") + "();");
                             pushLine("break;");
                         }
                         popScoping();
@@ -254,7 +305,7 @@ public class OutputGenerator
                 case "goto2":
                     if (parameters.size() == 1)
                     {
-                        pushLine(parameters.get(0).replaceAll(" ", "_") + "();");
+                        pushLine(parameters.get(0).toString().replaceAll(" ", "_") + "();");
                         pushLine("return;");
                     }
                     else {
@@ -265,15 +316,15 @@ public class OutputGenerator
                             {
                                 output += ", ";
                             }
-                            output += "\"" + parameters.get(i) + "\"";
+                            output += "\"" + parameters.get(i).toString() + "\"";
                         }
                         output += "))";
                         pushLine(output);
                         pushScoping("goto:switch");
                         for (int i = 0; i < parameters.size(); i++)
                         {
-                            pushLine("case: \"" + parameters.get(i) + "\"");
-                            pushLine(parameters.get(i).replaceAll(" ", "_") + "();");
+                            pushLine("case: \"" + parameters.get(i).toString() + "\"");
+                            pushLine(parameters.get(i).toString().replaceAll(" ", "_") + "();");
                             pushLine("break;");
                         }
                         popScoping();
@@ -287,24 +338,31 @@ public class OutputGenerator
                         {
                             toOutput += " && ";
                         }
-                        toOutput += "getVar(\"" + parameters.get(i) + "\", false)";
+                        toOutput += "getVar(\"" + parameters.get(i).toString() + "\", false)";
                     }
                     toOutput += ")";
                     pushLine(toOutput);
                     pushScoping("if:checkflag");
-                    pushCommand(new AtCommand("@Goto2(" + parameters.get(0) + ")"));
+                    pushCommand(new AtCommand("@Goto2(" + parameters.get(0).toString() + ")"));
                     popScoping();
                     break;
                 case "deletevar":
                     for (int i = 0; i < parameters.size(); i++)
                     {
-                        pushLine("delVar(\"" + parameters.get(i) + "\");");
+                        pushLine("delVar(\"" + parameters.get(i).toString() + "\");");
                     }
                     break;
                 case "deleteflag":
                     for (int i = 0; i < parameters.size(); i++)
                     {
-                        pushLine("delVar(\"" + parameters.get(i) + "\");");
+                        pushLine("delVar(\"" + parameters.get(i).toString() + "\");");
+                    }
+                    break;
+                case "edgemode":
+                    pushLine("setVar(\"edgingmode\", \"" + parameters.get(0).toString() + "\");");
+                    if (parameters.size() > 1)
+                    {
+                        pushLine("setVar(\"edginggoto\", \"" + parameters.get(1).toString() + "\")");
                     }
                     break;
                 case "flag":
@@ -315,10 +373,24 @@ public class OutputGenerator
                         {
                             toOutput4 += " && ";
                         }
-                        toOutput4 += "getVar(\"" + parameters.get(i) + "\", false)";
+                        toOutput4 += "getVar(\"" + parameters.get(i).toString() + "\", false)";
                     }
                     toOutput4 += ")";
                     pushLine(toOutput4);
+                    pushScoping("if:flag");             
+                    break;
+                case "flagor":
+                    String toOutput5 = "if(";
+                    for (int i = 0; i < parameters.size(); i++)
+                    {
+                        if (i > 0)
+                        {
+                            toOutput5 += " || ";
+                        }
+                        toOutput5 += "getVar(\"" + parameters.get(i).toString() + "\", false)";
+                    }
+                    toOutput5 += ")";
+                    pushLine(toOutput5);
                     pushScoping("if:flag");             
                     break;
                 case "responseyes":
@@ -334,7 +406,7 @@ public class OutputGenerator
                     }
                     pushLine(outputResponse);
                     pushScoping("response:answer" + (answerCounter-1));
-                    pushCommand(new AtCommand("@goto2(" + parameters.get(0) + ")"));
+                    pushCommand(new AtCommand("@goto2(" + parameters.get(0).toString() + ")"));
                     
                     break;
                 case "responseno":
@@ -350,7 +422,7 @@ public class OutputGenerator
                     }
                     pushLine(outputResponse2);
                     pushScoping("response:answer" + (answerCounter-1));
-                    pushCommand(new AtCommand("@goto2(" + parameters.get(0) + ")"));
+                    pushCommand(new AtCommand("@goto2(" + parameters.get(0).toString() + ")"));
                     
                     break;
                     //will probably implement this later. For now left out
@@ -360,7 +432,7 @@ public class OutputGenerator
                     int temporaryLineCounter4 = indexInCurrentLine;
                     pushRestOfLine();
                     indexInCurrentLine = temporaryLineCounter4;
-                    pushCommand(new AtCommand("@callreturn(Interrupt/" + parameters.get(0) + ")"));
+                    pushCommand(new AtCommand("@callreturn(Interrupt/" + parameters.get(0).toString() + ")"));
                     break;
                 case "notflag":
                     String toOutput2 = "if(";
@@ -370,7 +442,7 @@ public class OutputGenerator
                         {
                             toOutput2 += " && ";
                         }
-                        toOutput2 += "!getVar(\"" + parameters.get(i) + "\", false)";
+                        toOutput2 += "!getVar(\"" + parameters.get(i).toString() + "\", false)";
                     }
                     toOutput2 += ")";
                     pushLine(toOutput2);
@@ -379,21 +451,21 @@ public class OutputGenerator
                 case "setflag":
                     for (int i = 0; i < parameters.size(); i++)
                     {
-                        pushLine("setVar(\"" + parameters.get(i) + "\", true);");
+                        pushLine("setVar(\"" + parameters.get(i).toString() + "\", true);");
                     }
                     break;
                 case "tempflag":
                     for (int i = 0; i < parameters.size(); i++)
                     {
-                        pushLine("setTempVar(\"" + parameters.get(i) + "\", true);");
+                        pushLine("setTempVar(\"" + parameters.get(i).toString() + "\", true);");
                     }
                     break;
                 case "setdate":
-                    String toOutput3 = "setDate(\"" + parameters.get(0) + "\")";
+                    String toOutput3 = "setDate(\"" + parameters.get(0).toString() + "\")";
                     String timeAmount;
-                    if (parameters.get(1).toLowerCase().contains("seconds"))
+                    if (parameters.get(1).toString().toLowerCase().contains("seconds"))
                     {
-                        timeAmount = parameters.get(1).toLowerCase().replaceAll("seconds", "").trim();
+                        timeAmount = parameters.get(1).toString().toLowerCase().replaceAll("seconds", "").trim();
                         if (!timeAmount.equals("0"))
                         {
                             toOutput3 += ".addSeconds(" + timeAmount + ");";
@@ -403,9 +475,9 @@ public class OutputGenerator
                             toOutput3 += ";";
                         }
                     }
-                    else if (parameters.get(1).toLowerCase().contains("minutes"))
+                    else if (parameters.get(1).toString().toLowerCase().contains("minutes"))
                     {
-                        timeAmount = parameters.get(1).toLowerCase().replaceAll("minutes", "").trim();
+                        timeAmount = parameters.get(1).toString().toLowerCase().replaceAll("minutes", "").trim();
                         if (!timeAmount.equals("0"))
                         {
                             toOutput3 += ".addMinutes(" + timeAmount + ");";
@@ -415,9 +487,9 @@ public class OutputGenerator
                             toOutput3 += ";";
                         }
                     }
-                    else if (parameters.get(1).toLowerCase().contains("hours"))
+                    else if (parameters.get(1).toString().toLowerCase().contains("hours"))
                     {
-                        timeAmount = parameters.get(1).toLowerCase().replaceAll("hours", "").trim();
+                        timeAmount = parameters.get(1).toString().toLowerCase().replaceAll("hours", "").trim();
                         if (!timeAmount.equals("0"))
                         {
                             toOutput3 += ".addHours(" + timeAmount + ");";
@@ -427,9 +499,9 @@ public class OutputGenerator
                             toOutput3 += ";";
                         }
                     }
-                    else if (parameters.get(1).toLowerCase().contains("days"))
+                    else if (parameters.get(1).toString().toLowerCase().contains("days"))
                     {
-                        timeAmount = parameters.get(1).toLowerCase().replaceAll("days", "").trim();
+                        timeAmount = parameters.get(1).toString().toLowerCase().replaceAll("days", "").trim();
                         if (!timeAmount.equals("0"))
                         {
                             toOutput3 += ".addDays(" + timeAmount + ");";
@@ -439,9 +511,9 @@ public class OutputGenerator
                             toOutput3 += ";";
                         }
                     }
-                    else if (parameters.get(1).toLowerCase().contains("weeks"))
+                    else if (parameters.get(1).toString().toLowerCase().contains("weeks"))
                     {
-                        timeAmount = parameters.get(1).toLowerCase().replaceAll("weeks", "").trim();
+                        timeAmount = parameters.get(1).toString().toLowerCase().replaceAll("weeks", "").trim();
                         if (!timeAmount.equals("0"))
                         {
                             toOutput3 += ".addDays(" + timeAmount + " * 7);";
@@ -451,9 +523,9 @@ public class OutputGenerator
                             toOutput3 += ";";
                         }
                     }
-                    else if (parameters.get(1).toLowerCase().contains("months"))
+                    else if (parameters.get(1).toString().toLowerCase().contains("months"))
                     {
-                        timeAmount = parameters.get(1).toLowerCase().replaceAll("months", "").trim();
+                        timeAmount = parameters.get(1).toString().toLowerCase().replaceAll("months", "").trim();
                         if (!timeAmount.equals("0"))
                         {
                             toOutput3 += ".addMonths(" + timeAmount + ");";
@@ -463,9 +535,9 @@ public class OutputGenerator
                             toOutput3 += ";";
                         }
                     }
-                    else if (parameters.get(1).toLowerCase().contains("years"))
+                    else if (parameters.get(1).toString().toLowerCase().contains("years"))
                     {
-                        timeAmount = parameters.get(1).toLowerCase().replaceAll("years", "").trim();
+                        timeAmount = parameters.get(1).toString().toLowerCase().replaceAll("years", "").trim();
                         if (!timeAmount.equals("0"))
                         {
                             toOutput3 += ".addYears(" + timeAmount + ");";
@@ -477,14 +549,19 @@ public class OutputGenerator
                     }
                     pushLine(toOutput3);
                     break;
+                case "setmodule":
+                    pushLine("setVar(\"moduletorun\", \"" + parameters.get(0).toString() + "\")");
                 case "showimage":
-                    pushLine("getLocalTeasePicture(\"images\" + java.io.File.separator + \"" + parameters.get(0) + "\");");
+                    pushLine("getLocalTeasePicture(\"images\" + java.io.File.separator + \"" + parameters.get(0).toString() + "\");");
                     break;
                 case "playaudio":
-                    pushLine("playAudio(\"Audio\" + java.io.File.separator + \"" + parameters.get(0) + "\");");
+                    pushLine("playAudio(\"Audio\" + java.io.File.separator + \"" + parameters.get(0).toString() + "\");");
+                    break;
+                case "playvideo":
+                    pushLine("playVideo(\"Videos\" + java.io.File.separator + \"" + parameters.get(0).toString() + "\");");
                     break;
                 case "wait":
-                    pushLine("Wait(" + parameters.get(0) + ");");
+                    pushLine("Wait(" + parameters.get(0).toString() + ");");
                     break;
                 default:
                     if (commandName.toLowerCase().contains("chance"))
@@ -492,7 +569,7 @@ public class OutputGenerator
                         String chanceAmount = StringHelper.removeChars(commandName.toLowerCase(), "chance");
                         pushLine("if (randomInteger(1, 100) <= " + chanceAmount + ")");
                         pushScoping("if:chance");
-                        pushCommand(new AtCommand("@Goto2(" + parameters.get(0) + ")"));
+                        pushCommand(new AtCommand("@Goto2(" + parameters.get(0).toString() + ")"));
                         popScoping();
                     }
                     else {
@@ -533,16 +610,17 @@ public class OutputGenerator
     //Also includes the code to do a getresponse
     private void pushMessage(Message message)
     {
-        if (message.content.contains("tingle"))
-        {
-            int x = 1;
-        }
         
         boolean gettingInput = false;
         //Check the command before this message and if its SystemMessage make this a SMessage instead of a CMessage
         String outputMessage = "";
         if (indexInCurrentLine >= 1)
         {
+            if (thisParsedLine.lineComponents.get(0) instanceof AtCommand && ((AtCommand)thisParsedLine.lineComponents.get(0)).commandName.equalsIgnoreCase("info"))
+            {
+                pushToCurrent(message.content);
+                return;
+            }
             if (thisParsedLine.lineComponents.get(indexInCurrentLine - 1) instanceof AtCommand && ((AtCommand) thisParsedLine.lineComponents.get(indexInCurrentLine - 1)).commandName.equalsIgnoreCase("systemmessage"))
             {
                 
@@ -818,6 +896,33 @@ public class OutputGenerator
         pushLine(toOutput);
     }
     
+    private void pushIfStatement(IfStatement ifStatement)
+    {
+        String toOutput = "If (";
+        if (!StringHelper.isInteger(ifStatement.condition1))
+        {
+            toOutput += "getVar(\"" + ifStatement.condition1 + "\", 0)";
+        }
+        else
+        {
+            toOutput += ifStatement.condition1;
+        }
+        toOutput += " " + ifStatement.comparator + " ";
+        if (!StringHelper.isInteger(ifStatement.condition2))
+        {
+            toOutput += "getVar(\"" + ifStatement.condition2 + "\", 0)";
+        }
+        else
+        {
+            toOutput += ifStatement.condition2;
+        }
+        toOutput += ")";
+        pushLine(toOutput);
+        pushScoping("ifstatement");
+        pushCommand(new AtCommand("@goto2(" + ifStatement.gotoMethod + ")"));
+        popScoping();
+    }
+    
     //Start a new scope. Use this every time an if or something similar is started
     private void pushScoping(String scopeName)
     {
@@ -840,6 +945,23 @@ public class OutputGenerator
     {
         outputJavascript.add(getPadding() + lineToPush);
     }
+    
+    private void pushToCurrent(String toPush)
+    {
+        if (outputJavascript.size() >= 1)
+        {
+            outputJavascript.set(outputJavascript.size() - 1, outputJavascript.get(outputJavascript.size() - 1) + toPush);
+        }
+        else
+        {
+            throw new IllegalStateException("Output javascript is empty!!");
+        }
+    }
+    
+    /*private String processArgument(String argument)
+    {
+        
+    }*/
     
     //Gets the proper indenting for the line
     private String getPadding()

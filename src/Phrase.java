@@ -22,6 +22,6 @@ public class Phrase extends LineComponent
     
     public String toString()
     {
-        return "Phrase:" + message;
+        return message;
     }
 }
