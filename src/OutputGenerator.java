@@ -177,6 +177,10 @@ public class OutputGenerator
                     pushLine("if (getVar(\"chastityon\", false))");
                     pushScoping("if:inchastity");             
                     break;
+                case "stroking":
+                    pushLine("if (isStroking())");
+                    pushScoping("if:stroking");             
+                    break;
                 case "badmood":
                     pushLine("if (getApathyMoodIndex() >= 75)");
                     pushScoping("if:badmood");             
@@ -226,6 +230,16 @@ public class OutputGenerator
                     break;
                 case "contact3":
                     break;
+                case "checkstrokingstate":
+                    pushLine("if (isStroking())");
+                    pushScoping("if:checkstrokingstate");
+                    pushCommand(new AtCommand("@goto2(Sub_Stroking)"));
+                    popScoping();
+                    pushLine("else");
+                    pushScoping("if:checkstrokingstate_else");
+                    pushCommand(new AtCommand("@goto2(Sub_Not_Stroking)"));
+                    popScoping();
+                    break;
                 case "showsoftcoreimage":
                     pushLine("showTaggedImage(4, [\"softcore\"]);");
                     break;
@@ -237,6 +251,10 @@ public class OutputGenerator
                     break;
                 case "showhardcoreimage":
                     pushLine("showTaggedImage(4, [\"hardcore\"]);");
+                    break;
+                case "stopstroking":
+                    pushLine("Cmessage(\"%stopstroking%\", 0);");
+                    pushLine("stopStroking();");
                     break;
                 case "playvideo":
                     pushLine("playVideo(\"Videos\" + java.io.File.separator + \"*.*\");");
@@ -276,6 +294,9 @@ public class OutputGenerator
                     break;
                 case "rapidtextoff":
                     pushLine("setRapidText(false);");
+                    break;
+                case "randommodule":
+                    pushCommand(new AtCommand("@call2(Modules/*.js)"));
                     break;
                 case "rapidtexton":
                     pushLine("setRapidText(true);");
@@ -403,6 +424,7 @@ public class OutputGenerator
                         {
                             pushLine("case \"" + parameters.get(i) + "\":");
                             pushLine(parameters.get(i).toString().replaceAll(" ", "_") + "();");
+                            pushLine("return;");
                             pushLine("break;");
                         }
                         popScoping();
