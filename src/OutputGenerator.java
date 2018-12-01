@@ -139,6 +139,10 @@ public class OutputGenerator
                 case "adddomme":
                     pushLine("addContact(1);");
                     break;
+                case "acceptanswer":
+                    pushLine("else");
+                    pushScoping("if:responseAcceptAnswer");
+                    break;
                 case "addcontact1":
                     pushLine("addContact(2);");
                     break;
@@ -176,6 +180,12 @@ public class OutputGenerator
                 case "badmood":
                     pushLine("if (getApathyMoodIndex() >= 75)");
                     pushScoping("if:badmood");             
+                    break;
+                case "edgetoruin":
+                    pushLine("edgeToRuin();");            
+                    break;
+                case "edgetoruinhold":
+                    pushLine("edgeToRuinHold();");            
                     break;
                 case "goodmood":
                     pushLine("if (getApathyMoodIndex() <= 25)");
@@ -261,6 +271,53 @@ public class OutputGenerator
                 case "unlockimages":
                     pushLine("unlockImages();");
                     break;
+                case "endtease":
+                    pushLine("endSession();");
+                    break;
+                case "rapidtextoff":
+                    pushLine("setRapidText(false);");
+                    break;
+                case "rapidtexton":
+                    pushLine("setRapidText(true);");
+                    break;
+                case "gotodommelevel":
+                    pushLine("if (getApathyLevel <= 2)");
+                    pushScoping("if:dommelevel1");
+                    pushCommand(new AtCommand("@goto2(dommeLevel1)"));
+                    popScoping();
+                    pushLine("else if (getApathyLevel <= 4)");
+                    pushScoping("if:dommelevel1");
+                    pushCommand(new AtCommand("@goto2(dommeLevel2)"));
+                    popScoping();
+                    pushLine("else if (getApathyLevel <= 6)");
+                    pushScoping("if:dommelevel1");
+                    pushCommand(new AtCommand("@goto2(dommeLevel3)"));
+                    popScoping();
+                    pushLine("else if (getApathyLevel <= 8)");
+                    pushScoping("if:dommelevel1");
+                    pushCommand(new AtCommand("@goto2(dommeLevel4)"));
+                    popScoping();
+                    pushLine("else if (getApathyLevel <= 10)");
+                    pushScoping("if:dommelevel1");
+                    pushCommand(new AtCommand("@goto2(dommeLevel5)"));
+                    popScoping();
+                    
+                    break;
+                case "decideorgasm":
+                    pushLine("var orgasmResult = decideOrgasm();");
+                    pushLine("if (orgasmResult == 2)");
+                    pushScoping("if:alloworgasm");
+                    pushCommand(new AtCommand("@goto2(Orgasm_Allow)"));
+                    popScoping();
+                    pushLine("else if (orgasmResult == 1)");
+                    pushScoping("if:ruinorgasm");
+                    pushCommand(new AtCommand("@goto2(Orgasm_Ruin)"));
+                    popScoping();
+                    pushLine("else if (orgasmResult == 0)");
+                    pushScoping("if:denyorgasm");
+                    pushCommand(new AtCommand("@goto2(Orgasm_Deny)"));
+                    popScoping();
+                    break;
                 default:
                     pushLine("--" + command.toString());
                     break;
@@ -299,6 +356,25 @@ public class OutputGenerator
                 case "callrandom":
                     pushLine("run(\"" + parameters.get(0).toString() + "\" + java.io.File.separator + \"*.*\");");
                     pushLine("return;");
+                    break;
+                case "multipleedges":
+                    if (parameters.size() == 2)
+                    {
+                        pushLine("var amountEdges = " + parameters.get(0).toString().trim() + ";");
+                        pushLine("DoEdges(amountEdges, amountEdges, 0);");
+                    }
+                    else 
+                    {
+                        pushLine("if (randomInteger(1, 100) <= " + parameters.get(2).toString().trim() + ")");
+                        pushScoping("if:multipleedges");
+                        pushLine("var amountEdges = " + parameters.get(0).toString().trim() + ";");
+                        pushLine("DoEdges(amountEdges, amountEdges, 0);");
+                        popScoping();
+                        pushLine("else");
+                        pushScoping("else:multipleedges");
+                        pushLine("StartEdging()");
+                        popScoping();
+                    }
                     break;
                 //needs to execute commands after goto before
                 case "goto":
@@ -484,11 +560,72 @@ public class OutputGenerator
                     //will probably implement this later. For now left out
                 case "removeteasetime":
                     break;
+                case "ruinsorgasm":
+                    String toOutput7 = "if (";
+                    for (int i = 0; i < parameters.size(); i++)
+                    {
+                        if (i != 0)
+                        {
+                            toOutput7 += " || ";
+                        }
+                        if (parameters.get(i).toString().toLowerCase().equals("never"))
+                        {
+                            toOutput7 += "getRuinChance() == 0";
+                        }
+                        else if (parameters.get(i).toString().toLowerCase().equals("often"))
+                        {
+                            toOutput7 += "getRuinChance() >= 80";
+                        }
+                        else if (parameters.get(i).toString().toLowerCase().equals("rarely") || parameters.get(i).toString().toLowerCase().equals("not"))
+                        {
+                            toOutput7 += "getRuinChance() <= 20";
+                        }
+                        else if (parameters.get(i).toString().toLowerCase().equals("sometimes"))
+                        {
+                            toOutput7 += "(getRuinChance() >= 30 && getRuinChance() <= 70)";
+                        }
+                    }
+                    toOutput7 += ")";
+                    pushLine(toOutput7);
+                    pushScoping("if:ruinsorgasm");
+                    break;
+                case "allowsorgasm":
+                    String toOutput8 = "if (";
+                    for (int i = 0; i < parameters.size(); i++)
+                    {
+                        if (i != 0)
+                        {
+                            toOutput8 += " || ";
+                        }
+                        if (parameters.get(i).toString().toLowerCase().equals("never"))
+                        {
+                            toOutput8 += "getOrgasmChance() == 0";
+                        }
+                        else if (parameters.get(i).toString().toLowerCase().equals("often"))
+                        {
+                            toOutput8 += "getOrgasmChance() >= 80";
+                        }
+                        else if (parameters.get(i).toString().toLowerCase().equals("rarely") || parameters.get(i).toString().toLowerCase().equals("not"))
+                        {
+                            toOutput8 += "getOrgasmChance() <= 20";
+                        }
+                        else if (parameters.get(i).toString().toLowerCase().equals("sometimes"))
+                        {
+                            toOutput8 += "(getOrgasmChance() >= 30 && getOrgasmChance() <= 70)";
+                        }
+                    }
+                    toOutput8 += ")";
+                    pushLine(toOutput8);
+                    pushScoping("if:allowsorgasm");
+                    break;
                 case "interrupt":
                     int temporaryLineCounter4 = indexInCurrentLine;
                     pushRestOfLine();
                     indexInCurrentLine = temporaryLineCounter4;
                     pushCommand(new AtCommand("@callreturn(Interrupt/" + parameters.get(0).toString() + ")"));
+                    break;
+                case "miniscript":
+                    pushCommand(new AtCommand("@callreturn(Custom/Miniscripts/" + parameters.get(0).toString().trim() + ");"));
                     break;
                 case "notflag":
                     String toOutput2 = "if(";
