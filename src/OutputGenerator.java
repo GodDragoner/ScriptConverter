@@ -136,6 +136,30 @@ public class OutputGenerator
             //push the line with the converted javascript version
             switch (commandName.toLowerCase())
             {
+                case "adddomme":
+                    pushLine("addContact(1);");
+                    break;
+                case "addcontact1":
+                    pushLine("addContact(2);");
+                    break;
+                case "addcontact2":
+                    pushLine("addContact(3);");
+                    break;
+                case "addcontact3":
+                    pushLine("addContact(4);");
+                    break;
+                case "removedomme":
+                    pushLine("removeContact(1);");
+                    break;
+                case "removecontact1":
+                    pushLine("removeContact(2);");
+                    break;
+                case "removecontact2":
+                    pushLine("removeContact(3);");
+                    break;
+                case "removecontact3":
+                    pushLine("removeContact(4);");
+                    break;
                 case "afkon":
                     pushLine("setAFK(true);");
                     break;
@@ -184,6 +208,13 @@ public class OutputGenerator
                 case "systemmessage":
                     break;
                 case "differentanswer":
+                    break;
+                    //handled in pushMessage
+                case "contact1":
+                    break;
+                case "contact2":
+                    break;
+                case "contact3":
                     break;
                 case "showsoftcoreimage":
                     pushLine("showTaggedImage(4, [\"softcore\"]);");
@@ -330,6 +361,31 @@ public class OutputGenerator
                         popScoping();
                     }
                     break;  
+                case "group":
+                    String toOutput6 = "if (inGroup(";
+                    for (int i = 0; i < parameters.get(0).toString().length(); i++)
+                    {
+                        char c =  parameters.get(0).toString().toLowerCase().replaceAll("d", "5").charAt(i);
+                        int dommeIndex = Integer.parseInt(c + "");
+                        if (dommeIndex == 5)
+                        {
+                            dommeIndex = 1;
+                        }
+                        else
+                        {
+                            dommeIndex++;
+                        }
+                        toOutput6 += dommeIndex;
+                        if (parameters.get(0).toString().length() > (i + 1))
+                        {
+                            toOutput6 += ", ";
+                        }
+                    }
+                    toOutput6 += "))";
+                    pushLine(toOutput6);
+                    pushScoping("if:ingroup");
+                    
+                    break;
                 case "checkflag":
                     String toOutput = "if(";
                     for (int i = 0; i < parameters.size(); i++)
@@ -616,10 +672,20 @@ public class OutputGenerator
         String outputMessage = "";
         if (indexInCurrentLine >= 1)
         {
-            if (thisParsedLine.lineComponents.get(0) instanceof AtCommand && ((AtCommand)thisParsedLine.lineComponents.get(0)).commandName.equalsIgnoreCase("info"))
+            boolean answerDone = false;
+            if (thisParsedLine.lineComponents.get(indexInCurrentLine - 1) instanceof AtCommand && ((AtCommand)thisParsedLine.lineComponents.get(indexInCurrentLine - 1)).commandName.equalsIgnoreCase("info"))
             {
                 pushToCurrent(message.content);
                 return;
+            }
+            if (thisParsedLine.lineComponents.get(indexInCurrentLine - 1) instanceof AtCommand)
+            {
+                AtCommand command = (AtCommand) thisParsedLine.lineComponents.get(indexInCurrentLine - 1);
+                if (command.commandName.toLowerCase().equals("contact1") || command.commandName.toLowerCase().equals("contact2") || command.commandName.toLowerCase().equals("contact3"))
+                {
+                    outputMessage += "SMessage(";
+                    answerDone = true;
+                }
             }
             if (thisParsedLine.lineComponents.get(indexInCurrentLine - 1) instanceof AtCommand && ((AtCommand) thisParsedLine.lineComponents.get(indexInCurrentLine - 1)).commandName.equalsIgnoreCase("systemmessage"))
             {
@@ -663,7 +729,10 @@ public class OutputGenerator
                 }
                 else
                 {
-                    outputMessage += "CMessage(";
+                    if (!answerDone)
+                    {
+                        outputMessage += "CMessage(";
+                    }
                 }
             }
         }
@@ -715,7 +784,7 @@ public class OutputGenerator
         for (LineComponent comp: message.messageComponents)
         {
             //Concatenate the different parts
-            if (counter != 0)
+            if (counter != 0 && !(comp instanceof FollowUp))
             {
                 outputMessage += " + ";
             }
@@ -757,9 +826,43 @@ public class OutputGenerator
                 }
                 outputMessage += ")";
             }
+            else if (comp instanceof FollowUp)
+            {
+                outputMessage += ");";
+                pushLine(outputMessage);
+                pushLine("if (randomInteger(0, 100) <= " + ((FollowUp)comp).percent + ")");
+                pushScoping("if:followup");
+                outputMessage = "CMessage(\"" + ((FollowUp)comp).followUp + "\");";
+                pushLine(outputMessage);
+                popScoping();
+                return;
+            }
             counter++;
         }
-        outputMessage += ");";
+        if (indexInCurrentLine > 0 && thisParsedLine.lineComponents.get(indexInCurrentLine - 1) instanceof AtCommand)
+        {
+            AtCommand command = (AtCommand) thisParsedLine.lineComponents.get(indexInCurrentLine - 1);
+            if (command.commandName.toLowerCase().equals("contact1"))
+            {
+                outputMessage += ", -1, 2);";
+            }
+            else if (command.commandName.toLowerCase().equals("contact2"))
+            {
+                outputMessage += ", -1, 3);";
+            }
+            else if (command.commandName.toLowerCase().equals("contact3"))
+            {
+                outputMessage += ", -1, 4);";
+            }
+            else 
+            {
+                outputMessage += ");";
+            }
+        }
+        else
+        {
+            outputMessage += ");";
+        }
         pushLine(outputMessage);
         if (gettingInput)
         {
