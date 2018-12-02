@@ -17,7 +17,7 @@ public class Driver
         
         ScriptAnalyzer analyzer = new ScriptAnalyzer();
         File input = new File("C:\\Users\\tyler\\Desktop\\Coding\\Testing\\test\\TeaseAIJavaGithub\\Personalities\\HouseOfTease\\"
-                + "Original\\House_of_Tease_6\\Modules\\AV_ModAudioTease2.txt"); /*"C:\\Users\\tyler\\Desktop\\Coding\\Testing\\test\\TeaseAIJavaGithub\\Personalities\\HouseOfTease\\"s + "Original\\House_of_Tease_6\\Stroke\\End\\Extended_End.txt"*/
+                + "Original\\House_of_Tease_6\\Modules\\AV_ModAudioTease3.txt"); /*"C:\\Users\\tyler\\Desktop\\Coding\\Testing\\test\\TeaseAIJavaGithub\\Personalities\\HouseOfTease\\"s + "Original\\House_of_Tease_6\\Stroke\\End\\Extended_End.txt"*/
         File output = new File("C:\\Users\\tyler\\Desktop\\Coding\\Testing\\test\\TeaseAIJavaGithub\\Personalities\\HouseOfTease\\"
                 + "Structure\\Start\\Extended_Start.js");
         StringBuffer outputBuffer;

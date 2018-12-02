@@ -183,6 +183,10 @@ public class OutputGenerator
                     pushLine("if (getVar(\"chastityon\", false))");
                     pushScoping("if:inchastity");             
                     break;
+                case "cocksmall":
+                    pushLine("if (getVar(\"cocksize\", \"NA\") == \"small\")");
+                    pushScoping("if:cocksmall");             
+                    break;
                 case "stroking":
                     pushLine("if (isStroking())");
                     pushScoping("if:stroking");             
@@ -774,7 +778,10 @@ public class OutputGenerator
                     popScoping();
                     break;
                 case "miniscript":
-                    pushCommand(new AtCommand("@callreturn(Custom/Miniscripts/" + parameters.get(0).toString().trim() + ");"));
+                    pushCommand(new AtCommand("@callreturn(Custom/Miniscripts/" + parameters.get(0).toString().trim() + ")"));
+                    break;
+                case "customtask":
+                    pushCommand(new AtCommand("@callreturn(Custom/Tasks/" + parameters.get(0).toString().trim() + ".txt)"));
                     break;
                 case "notflag":
                     String toOutput2 = "if(";
@@ -959,12 +966,13 @@ public class OutputGenerator
             return;
         }
         
+        String sender = null;
+        
         boolean gettingInput = false;
         //Check the command before this message and if its SystemMessage make this a SMessage instead of a CMessage
         String outputMessage = "";
         if (indexInCurrentLine >= 1)
         {
-            boolean answerDone = false;
             if (thisParsedLine.lineComponents.get(indexInCurrentLine - 1) instanceof AtCommand && ((AtCommand)thisParsedLine.lineComponents.get(indexInCurrentLine - 1)).commandName.equalsIgnoreCase("info"))
             {
                 pushToCurrent(message.content);
@@ -973,14 +981,28 @@ public class OutputGenerator
             if (thisParsedLine.lineComponents.get(indexInCurrentLine - 1) instanceof AtCommand)
             {
                 AtCommand command = (AtCommand) thisParsedLine.lineComponents.get(indexInCurrentLine - 1);
-                if (command.commandName.toLowerCase().equals("contact1") || command.commandName.toLowerCase().equals("contact2") || command.commandName.toLowerCase().equals("contact3"))
+                if (command.commandName.toLowerCase().equals("contact1"))
                 {
-                    outputMessage += "SMessage(";
-                    answerDone = true;
+                    sender = "2";
+                }
+                else if (command.commandName.toLowerCase().equals("contact2"))
+                {
+                    sender = "3";
+                }
+                else if (command.commandName.toLowerCase().equals("contact3"))
+                {
+                    sender = "4";
                 }
             }
-            if (thisParsedLine.lineComponents.get(indexInCurrentLine - 1) instanceof AtCommand && ((AtCommand) thisParsedLine.lineComponents.get(indexInCurrentLine - 1)).commandName.equalsIgnoreCase("systemmessage"))
+            if (thisParsedLine.lineComponents.get(indexInCurrentLine - 1) instanceof AtCommand && (((AtCommand) thisParsedLine.lineComponents.get(indexInCurrentLine - 1)).commandName.equalsIgnoreCase("systemmessage")
+                    || ((AtCommand) thisParsedLine.lineComponents.get(indexInCurrentLine - 1)).commandName.toLowerCase().equals("contact1")
+                    || ((AtCommand) thisParsedLine.lineComponents.get(indexInCurrentLine - 1)).commandName.toLowerCase().equals("contact2")
+                    || ((AtCommand) thisParsedLine.lineComponents.get(indexInCurrentLine - 1)).commandName.toLowerCase().equals("contact3")))
             {
+                if (sender == null)
+                {
+                    sender = "-1";
+                }
                 
                 if (scoping.peek().equalsIgnoreCase("differentanswer"))
                 {
@@ -1028,7 +1050,7 @@ public class OutputGenerator
                 }
                 else
                 {
-                    if (!answerDone)
+                    if (sender == null)
                     {
                         outputMessage += "CMessage(";
                     }
@@ -1101,7 +1123,11 @@ public class OutputGenerator
             {
                 outputMessage += " + ";
             }
-            if (comp instanceof Phrase)
+            if (comp instanceof HashFunction)
+            {
+                outputMessage += ((HashFunction)comp).toString();
+            }
+            else if (comp instanceof Phrase)
             {
                 //All of this checking with the counter is just to make sure that there is proper spacing when @RT or other similar commands are used
                 outputMessage += "\"" + ((Phrase) comp).message.trim();
@@ -1159,19 +1185,19 @@ public class OutputGenerator
         else if (indexInCurrentLine > 0 && thisParsedLine.lineComponents.get(indexInCurrentLine - 1) instanceof AtCommand)
         {
             AtCommand command = (AtCommand) thisParsedLine.lineComponents.get(indexInCurrentLine - 1);
-            if (command.commandName.toLowerCase().equals("contact1"))
+            if (command.commandName.toLowerCase().equals("contact1") || command.commandName.toLowerCase().equals("contact2") || command.commandName.toLowerCase().equals("contact3") ||
+                    command.commandName.toLowerCase().equals("smessage"))
             {
-                outputMessage += ", -1, 2);";
+                if (!gettingInput)
+                {
+                    outputMessage += ", -1, " + sender + ");";
+                }
+                else
+                {
+                    outputMessage += ", -1, true, " + sender + ");";
+                }
             }
-            else if (command.commandName.toLowerCase().equals("contact2"))
-            {
-                outputMessage += ", -1, 3);";
-            }
-            else if (command.commandName.toLowerCase().equals("contact3"))
-            {
-                outputMessage += ", -1, 4);";
-            }
-            else 
+            else
             {
                 outputMessage += ");";
             }

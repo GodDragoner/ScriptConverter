@@ -12,7 +12,7 @@ public class Message extends LineComponent
     {
         super(message);
         messageComponents = new ArrayList<LineComponent>();
-        String phraseComponent = "(" + RegexHelper.simplePhrase + "|" + RegexHelper.randomText + "|" + RegexHelper.formatter + "|" + RegexHelper.variable + "|" + RegexHelper.followUp + "|" + RegexHelper.hashFunction + ")";
+        String phraseComponent = "(" + RegexHelper.hashFunction + "|" + RegexHelper.simplePhrase + "|" + RegexHelper.randomText + "|" + RegexHelper.formatter + "|" + RegexHelper.followUp + ")";
         Matcher phraseComponentMatcher = Pattern.compile(phraseComponent).matcher(message);
         while (phraseComponentMatcher.find())
         {
@@ -27,10 +27,6 @@ public class Message extends LineComponent
             else if (phraseComponentMatcher.group().matches(RegexHelper.formatter))
             {
                 messageComponents.add(new Formatter(phraseComponentMatcher.group()));
-            }
-            else if (phraseComponentMatcher.group().matches(RegexHelper.variable))
-            {
-                messageComponents.add(new Variable(phraseComponentMatcher.group()));
             }
             else if (phraseComponentMatcher.group().matches(RegexHelper.followUp))
             {

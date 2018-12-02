@@ -33,16 +33,39 @@ public class HashFunction extends LineComponent
         String toOutput = "";
         switch (commandName.toLowerCase())
         {
-        case "random":
-            if (arguments.size() != 2)
-            {
-                throw new IllegalStateException("arguments size needs to be 2");
-            }
-            toOutput = "randomInt(" + arguments.get(0) + ", " + arguments.get(1) + ")";
-            break;
-            
-            default:
-                toOutput = "--HashFunction " + commandName + arguments.toString();
+            case "random":
+                if (arguments.size() != 2)
+                {
+                    throw new IllegalStateException("arguments size needs to be 2");
+                }
+                toOutput = "randomInt(" + arguments.get(0) + ", " + arguments.get(1) + ")";
+                break;
+            case "randomround10":
+                if (arguments.size() != 2)
+                {
+                    throw new IllegalStateException("arguments size needs to be 2");
+                }
+                toOutput = "(java.lang.Math.round(randomInt(" + arguments.get(0) + ", " + arguments.get(1) + ") / 10.0) * 10)";
+                break;
+            case "randomround100":
+                if (arguments.size() != 2)
+                {
+                    throw new IllegalStateException("arguments size needs to be 2");
+                }
+                toOutput = "(java.lang.Math.round(randomInt(" + arguments.get(0) + ", " + arguments.get(1) + ") / 100.0) * 100)";
+                break;
+            case "randomround5":
+                if (arguments.size() != 2)
+                {
+                    throw new IllegalStateException("arguments size needs to be 2");
+                }
+                toOutput = "(java.lang.Math.round(randomInt(" + arguments.get(0) + ", " + arguments.get(1) + ") / 5.0) * 5)";
+                break;
+            case "var":
+                toOutput = "getVar(\"" + arguments.get(0) + "\", \"\")";
+                break;
+                default:
+                    toOutput = "--HashFunction " + commandName + arguments.toString();
         }
         return toOutput;
     }

@@ -47,10 +47,6 @@ public class AtCommand extends LineComponent
             {
                 parameters.add(new Formatter(found));
             }
-            else if (found.matches(RegexHelper.variable))
-            {
-                parameters.add(new Variable(found));
-            }
             else if (found.matches(RegexHelper.path))
             {
                 parameters.add(new Path(found));
