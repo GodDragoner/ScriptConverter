@@ -16,6 +16,7 @@ public class Phrase extends LineComponent
             String updatedVocab = "%" + vocabMatcher.group(2) + "%";
             message = message.replaceFirst("#" + vocabMatcher.group(2), updatedVocab);
         }
+        message = message.replaceAll("\'", "\\\\\'");
         message = message.replaceAll("\"", "\\\\\"");
         this.message = message;
     }

@@ -28,6 +28,10 @@ public class ScriptAnalyzer
             
             while ((line = bufferedReader.readLine()) != null) 
             {
+                if (line.contains("RandomText"))
+                {
+                    line = line.replaceAll("RandomText", "RT");
+                }
                 Matcher sendMessageMatcher = Pattern.compile(RegexHelper.sendMessage).matcher(line);
                 Matcher commandsMatcher = Pattern.compile(RegexHelper.commandsLine).matcher(line);
                 Matcher methodMatcher = Pattern.compile(RegexHelper.methodStart).matcher(line);

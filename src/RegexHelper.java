@@ -41,7 +41,7 @@ public class RegexHelper
     
     public static final String simplePhrase = "((\"|\')?(" + word + "|" + vocab + "|" + emoji + ")(\"|\\.+|\')?(" + punctuation + ")?(\\s+|$))+";
     public static final String randomText = "(@RT(\\(|\\[)(" + argument + "\\s*(,\\s*" + argument + "\\s?)*)(\\)|\\]))";  
-    public static final String followUp = "@FollowUp\\d\\d\\(" + argument + "\\)";
+    public static final String followUp = "@FollowUp(\\d\\d)?\\(\\s*" + argument + "\\s*\\)";
     public static final String phrase = "((\"|\')?(" + word + "|" + vocab + "|" + emoji + "|" + randomText + "|" + formatter + "|" + variable + "|" + followUp + "|" + hashFunction + ")(" + punctuation + ")*(\"|\\.+|\')?(\\s)?(" + punctuation + ")*(\\s+|$|\\.+|-))+";
     public static final String atCommandSimple = "(?!@RT)(?!@If)(@(" + argumentWord + "))";
     public static final String atCommandArgs = "(?!@RT\\()(?!@If(\\(|\\[))\\s*(" + atCommandSimple + "(\\(|\\[)(\\s?" + argument + "\\s?(,\\s?" + argument + "\\s?)*)(\\)|\\]))";

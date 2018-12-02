@@ -2,7 +2,6 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javafx.scene.shape.Line;
 
 //Parsed lines are the keystone of the interpeter step. A parsed line consists of an arraylist
 //of linecomponents. It also has an enum that represents which regex this parsed line matched

@@ -143,6 +143,12 @@ public class OutputGenerator
                     pushLine("else");
                     pushScoping("if:responseAcceptAnswer");
                     break;
+                case "cbt":
+                    pushCommand(new AtCommand("@callreturn(CBT/*.txt)"));
+                    break;
+                case "cbtballs":
+                    pushCommand(new AtCommand("@callreturn(CBT/CBTBalls_First.txt)"));
+                    break;
                 case "addcontact1":
                     pushLine("addContact(2);");
                     break;
@@ -202,6 +208,12 @@ public class OutputGenerator
                 case "decreaseorgasmchance":
                     pushLine("increaseOrgasmChance(-8);");
                     break;
+                    //TODO for now make this do the same thing as edge
+                case "edgehold":
+                    pushLine("startEdging();");
+                    pushLine("holdEdge();");
+                    break;
+                case "edgenohold":
                 case "edge":
                     pushLine("startEdging();");
                     break;
@@ -222,6 +234,13 @@ public class OutputGenerator
                 case "systemmessage":
                     break;
                 case "differentanswer":
+                    break;
+                case "tagstrapon":
+                    break;
+                    //currently unimplemented
+                case "playavoidtheedge":
+                    break;
+                case "tagartwork":
                     break;
                     //handled in pushMessage
                 case "contact1":
@@ -252,8 +271,10 @@ public class OutputGenerator
                 case "showhardcoreimage":
                     pushLine("showTaggedImage(4, [\"hardcore\"]);");
                     break;
+                case "showblogimage":
+                    pushLine("getTeasePicture();");
+                    break;
                 case "stopstroking":
-                    pushLine("Cmessage(\"%stopstroking%\", 0);");
                     pushLine("stopStroking();");
                     break;
                 case "playvideo":
@@ -266,6 +287,9 @@ public class OutputGenerator
                     pushLine("Stroking();");
                     break;
                 case "moodup":
+                    pushLine("increaseAnger(-3)");
+                    break;
+                case "mooddown":
                     pushLine("increaseAnger(3)");
                     break;
                 //TODO THIS MIGHT NEED TO BE CHANGED TO SOMETHING ELSE???
@@ -289,6 +313,9 @@ public class OutputGenerator
                 case "unlockimages":
                     pushLine("unlockImages();");
                     break;
+                case "lockimages":
+                    pushLine("lockImages();");
+                    break;
                 case "endtease":
                     pushLine("endSession();");
                     break;
@@ -300,6 +327,36 @@ public class OutputGenerator
                     break;
                 case "rapidtexton":
                     pushLine("setRapidText(true);");
+                    break;
+                case "showtaggedimage":
+                    String toOutput8 = "showTaggedImage(4, [";
+                    int showTaggedImageCounter = indexInCurrentLine + 1;
+                    while (thisParsedLine.lineComponents.size() > (showTaggedImageCounter + 1))
+                    {
+                        if (showTaggedImageCounter > (indexInCurrentLine + 1))
+                        {
+                            toOutput8 += ", ";
+                        }
+                        if (!(thisParsedLine.lineComponents.get(showTaggedImageCounter) instanceof AtCommand))
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            String nextComponentCommand = ((AtCommand)thisParsedLine.lineComponents.get(showTaggedImageCounter)).commandName.toLowerCase().trim();
+                            if (nextComponentCommand.equals("tagstrapon"))
+                            {
+                                toOutput8 += "\"dildo\"";
+                            }
+                            if (nextComponentCommand.equals("tagartwork"))
+                            {
+                                toOutput8 += "\"outdoors\"";
+                            }
+                        }
+                        showTaggedImageCounter++;
+                    }
+                    toOutput8 += "]);";
+                    pushLine(toOutput8);
                     break;
                 case "gotodommelevel":
                     pushLine("if (getApathyLevel <= 2)");
@@ -338,6 +395,54 @@ public class OutputGenerator
                     pushScoping("if:denyorgasm");
                     pushCommand(new AtCommand("@goto2(Orgasm_Deny)"));
                     popScoping();
+                    break;
+                case "likeblogimage":
+                    pushLine("sortPicture(getImagePath(), 3);");
+                    break;
+                case "dislikeblogimage":
+                    pushLine("sortPicture(getImagePath(), 1);");
+                    break;
+                case "remove100tokens":
+                    pushLine("addTokens(-100);");
+                    break;
+                case "add100tokens":
+                    pushLine("addTokens(100);");
+                    break;
+                case "remove10tokens":
+                    pushLine("addTokens(-10);");
+                    break;
+                case "add10tokens":
+                    pushLine("addTokens(10);");
+                    break;
+                case "remove25tokens":
+                    pushLine("addTokens(-25);");
+                    break;
+                case "add25tokens":
+                    pushLine("addTokens(25);");
+                    break;
+                case "remove50tokens":
+                    pushLine("addTokens(-50);");
+                    break;
+                case "add50tokens":
+                    pushLine("addTokens(50);");
+                    break;
+                case "remove5tokens":
+                    pushLine("addTokens(-5);");
+                    break;
+                case "add5tokens":
+                    pushLine("addTokens(5);");
+                    break;
+                case "remove3tokens":
+                    pushLine("addTokens(-3);");
+                    break;
+                case "add3tokens":
+                    pushLine("addTokens(3);");
+                    break;
+                case "remove1tokens":
+                    pushLine("addTokens(-1);");
+                    break;
+                case "add1tokens":
+                    pushLine("addTokens(1);");
                     break;
                 default:
                     pushLine("--" + command.toString());
@@ -401,6 +506,14 @@ public class OutputGenerator
                 case "goto":
                     int temporaryLineCounter3 = indexInCurrentLine;
                     pushRestOfLine();
+                    for (int i = 0; i < parameters.size(); i++)
+                    {
+                        ((Phrase)parameters.get(i)).message = parameters.get(i).toString().replaceAll(" ", "_").replaceAll("\\\\'", "");
+                        if (StringHelper.isInteger("" + parameters.get(i).toString().charAt(0)))
+                        {
+                            ((Phrase)parameters.get(i)).message = "a" + parameters.get(i).toString();
+                        }
+                    }
                     indexInCurrentLine = temporaryLineCounter3;
                     if (parameters.size() == 1)
                     {
@@ -432,6 +545,14 @@ public class OutputGenerator
                     break; 
                     //This is just called by other commands
                 case "goto2":
+                    for (int i = 0; i < parameters.size(); i++)
+                    {
+                        ((Phrase)parameters.get(i)).message = parameters.get(i).toString().replaceAll(" ", "_").replaceAll("\\\\'", "");
+                        if (StringHelper.isInteger("" + parameters.get(i).toString().charAt(0)))
+                        {
+                            ((Phrase)parameters.get(i)).message = "a" + parameters.get(i).toString();
+                        }
+                    }
                     if (parameters.size() == 1)
                     {
                         pushLine(parameters.get(0).toString().replaceAll(" ", "_") + "();");
@@ -646,6 +767,12 @@ public class OutputGenerator
                     indexInCurrentLine = temporaryLineCounter4;
                     pushCommand(new AtCommand("@callreturn(Interrupt/" + parameters.get(0).toString() + ")"));
                     break;
+                case "timeout":
+                    pushLine("if (answer" + (answerCounter - 1) + ".isTimedOut())");
+                    pushScoping("if:timeout");
+                    pushCommand(new AtCommand("@goto2(" + parameters.get(1).toString() + ")"));
+                    popScoping();
+                    break;
                 case "miniscript":
                     pushCommand(new AtCommand("@callreturn(Custom/Miniscripts/" + parameters.get(0).toString().trim() + ");"));
                     break;
@@ -825,6 +952,12 @@ public class OutputGenerator
     //Also includes the code to do a getresponse
     private void pushMessage(Message message)
     {
+        String timeout = null;
+        if (message.content.toLowerCase().contains("stop"))
+        {
+            pushLine("CMessage(\"%stopstroking%\", 0);");
+            return;
+        }
         
         boolean gettingInput = false;
         //Check the command before this message and if its SystemMessage make this a SMessage instead of a CMessage
@@ -864,6 +997,13 @@ public class OutputGenerator
                             outputMessage += "let answer" + answerCounter + " = getInput(";
                             gettingInput = true;
                             answerCounter++;
+                            if (thisParsedLine.lineComponents.size() > indexInCurrentLine + 1)
+                            {
+                                if (thisParsedLine.lineComponents.get(indexInCurrentLine + 1) instanceof AtCommand && ((AtCommand)thisParsedLine.lineComponents.get(indexInCurrentLine + 1)).commandName.toLowerCase().equals("timeout"))
+                                {
+                                    timeout = ((AtCommand)thisParsedLine.lineComponents.get(indexInCurrentLine + 1)).parameters.get(0).toString();
+                                }
+                            }
                         }
                         else
                         {
@@ -909,6 +1049,13 @@ public class OutputGenerator
                     gettingInput = true;
                     answerCounter++;
                     answerSet = true;
+                    if (thisParsedLine.lineComponents.size() > indexInCurrentLine + 1)
+                    {
+                        if (thisParsedLine.lineComponents.get(indexInCurrentLine + 1) instanceof AtCommand && ((AtCommand)thisParsedLine.lineComponents.get(indexInCurrentLine + 1)).commandName.toLowerCase().equals("timeout"))
+                        {
+                            timeout = ((AtCommand)thisParsedLine.lineComponents.get(indexInCurrentLine + 1)).parameters.get(0).toString();
+                        }
+                    }
                 }
                 ParsedLine tempLine = parsedInput.get(currentLineIndex + 1);
                 if (tempLine.lineComponents.size() >= 1 && ! answerSet)
@@ -919,6 +1066,13 @@ public class OutputGenerator
                         outputMessage += "let answer" + answerCounter + " = getInput(";
                         gettingInput = true;
                         answerCounter++;
+                        if (thisParsedLine.lineComponents.size() > indexInCurrentLine + 1)
+                        {
+                            if (thisParsedLine.lineComponents.get(indexInCurrentLine + 1) instanceof AtCommand && ((AtCommand)thisParsedLine.lineComponents.get(indexInCurrentLine + 1)).commandName.toLowerCase().equals("timeout"))
+                            {
+                                timeout = ((AtCommand)thisParsedLine.lineComponents.get(indexInCurrentLine + 1)).parameters.get(0).toString();
+                            }
+                        }
                     }
                     else
                     {
@@ -998,7 +1152,11 @@ public class OutputGenerator
             }
             counter++;
         }
-        if (indexInCurrentLine > 0 && thisParsedLine.lineComponents.get(indexInCurrentLine - 1) instanceof AtCommand)
+        if (timeout != null)
+        {
+            outputMessage += ", " + timeout + ");";
+        }
+        else if (indexInCurrentLine > 0 && thisParsedLine.lineComponents.get(indexInCurrentLine - 1) instanceof AtCommand)
         {
             AtCommand command = (AtCommand) thisParsedLine.lineComponents.get(indexInCurrentLine - 1);
             if (command.commandName.toLowerCase().equals("contact1"))

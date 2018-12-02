@@ -2,8 +2,6 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javafx.scene.shape.Line;
-
 
 //An AtCommand is a command in the original TeaseAI
 //An example AtCommand could be @RapidTextOn or @Goto(AV_DecOrg)

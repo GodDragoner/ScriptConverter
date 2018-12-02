@@ -15,11 +15,15 @@ public class FollowUp extends LineComponent
         String percent = "(?<=(@FollowUp))(\\d\\d)(?=(\\())";
         Matcher percentMatcher = Pattern.compile(percent).matcher(content);
         
-        String parameter = "(?<=(\\())" + RegexHelper.argument + "(?=(\\)))";
+        String parameter = "(?<=(\\())\\s?" + RegexHelper.argument + "\\s?(?=(\\)))";
         Matcher parameterMatcher = Pattern.compile(parameter).matcher(content);
         if (percentMatcher.find())
         {
             this.percent = Integer.parseInt(percentMatcher.group());
+        }
+        else
+        {
+            this.percent = -1;
         }
         if (parameterMatcher.find())
         {
