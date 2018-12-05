@@ -39,7 +39,7 @@ public class RegexHelper
     public static final String comparator = "(<=|>=|=|<|>)";
     public static final String formatter = "<(\\s?" + word + "|" + operator + "\\s?)+>";
     
-    public static final String simplePhrase = "((\"|\')?(" + word + "|" + vocab + "|" + emoji + ")(\"|\\.+|\')?(" + punctuation + ")?(\\s+|$))+";
+    public static final String simplePhrase = "((\"|\')?(" + word + "|" + vocab + "|" + emoji + ")(\"|\\.+|\')?(" + punctuation + ")*(\\s+|$))+";
     public static final String randomText = "(@RT(\\(|\\[)(" + argument + "\\s*(,\\s*" + argument + "\\s?)*)(\\)|\\]))";  
     public static final String followUp = "@FollowUp(\\d\\d)?\\(\\s*" + argument + "\\s*\\)";
     public static final String phrase = "((\"|\')?(" + word + "|" + vocab + "|" + emoji + "|" + randomText + "|" + formatter + "|" + followUp + "|" + hashFunction + ")(" + punctuation + ")*(\"|\\.+|\')?(\\s)?(" + punctuation + ")*(\\s+|$|\\.+|-))+";

@@ -79,6 +79,7 @@ public class ScriptAnalyzer
             fileReader.close();
             OutputGenerator generator = new OutputGenerator(parsedInput);
             generator.generateOutput();
+            return generator.getOutputBuffer();
         }
         catch (IOException e)
         {

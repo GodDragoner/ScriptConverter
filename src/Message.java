@@ -36,6 +36,10 @@ public class Message extends LineComponent
             {
                 messageComponents.add(new HashFunction(phraseComponentMatcher.group()));
             }
+            else 
+            {
+                messageComponents.add(new Phrase(phraseComponentMatcher.group()));
+            }
         }
     }
     public String toString()

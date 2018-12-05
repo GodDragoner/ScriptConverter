@@ -149,6 +149,9 @@ public class OutputGenerator
                 case "cbtballs":
                     pushCommand(new AtCommand("@callreturn(CBT/CBTBalls_First.txt)"));
                     break;
+                case "cbtcock":
+                    pushCommand(new AtCommand("@callreturn(CBT/CBTCock_First.txt)"));
+                    break;
                 case "addcontact1":
                     pushLine("addContact(2);");
                     break;
@@ -204,6 +207,12 @@ public class OutputGenerator
                 case "goodmood":
                     pushLine("if (getApathyMoodIndex() <= 25)");
                     pushScoping("if:goodmood");             
+                    break;
+                case "longhold":
+                    pushLine("setLongHold(100);");
+                    break;
+                case "extremehold":
+                    pushLine("setExtremeHold(100);");
                     break;
                 case "neutralmood":
                     pushLine("if (getApathyMoodIndex() > 25 && getApathyMoodIndex() < 75)");
@@ -275,11 +284,26 @@ public class OutputGenerator
                 case "showhardcoreimage":
                     pushLine("showTaggedImage(4, [\"hardcore\"]);");
                     break;
+                case "showboobsimage":
+                    pushLine("showTaggedImage(4, [\"boobs\"]);");
+                    break;
+                case "showbuttimage":
+                    pushLine("showTaggedImage(4, [\"ass\"]);");
+                    break;
+                case "showlikedimage":
+                    pushLine("getTeasePicture(3);");
+                    break;
+                case "showcaptionsimage":
+                    pushLine("showTaggedImage(4, [\"captions\"]);");
+                    break;
                 case "showblogimage":
                     pushLine("getTeasePicture();");
                     break;
                 case "stopstroking":
                     pushLine("stopStroking();");
+                    break;
+                case "playchvideo":
+                    pushLine("playVideo(\"Videos\" + java.io.File.separator + \"CH\" + java.io.File.separator + \"*.*\");");
                     break;
                 case "playvideo":
                     pushLine("playVideo(\"Videos\" + java.io.File.separator + \"*.*\");");
@@ -465,6 +489,12 @@ public class OutputGenerator
             {
                 case "slideshow":
                     pushLine("//" + command.toString());
+                    break;
+                case "longhold":
+                    pushLine("setLongHold(" + parameters.get(0).toString() + ");");
+                    break;
+                case "extremehold":
+                    pushLine("setExtremeHold(" + parameters.get(0).toString() + ");");
                     break;
                 case "call2":
                     pushLine("run(\"" + parameters.get(0).toString() + "\");");
@@ -1418,5 +1448,20 @@ public class OutputGenerator
             toReturn += "    ";
         }
         return toReturn;
+    }
+    
+    public StringBuffer getOutputBuffer()
+    {
+        StringBuffer toOutput = new StringBuffer();
+        for (int i = 0; i < outputJavascript.size(); i++)
+        {
+            if (i != 0)
+            {
+                toOutput.append("\n");
+            }
+            toOutput.append(outputJavascript.get(i));
+        }
+        
+        return toOutput;
     }
 }
