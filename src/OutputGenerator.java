@@ -34,12 +34,18 @@ public class OutputGenerator
         currentLineIndex = 0;
         for (ParsedLine parsedLine: parsedInput)
         {
-            if (!parsedLine.thisRegex.equals(ParsedLine.lineRegex.RESPONSE) && scoping.peek().contains("response") &&
+            if (parsedLine.thisRegex.equals(ParsedLine.lineRegex.UNINTERPRETED))
+            {
+                pushLine("--UNINTERPRETED LINE:" + parsedLine.line);
+                currentLineIndex++;
+                continue;
+            }
+            if (!scoping.isEmpty() && !parsedLine.thisRegex.equals(ParsedLine.lineRegex.RESPONSE) && scoping.peek().contains("response") &&
                     !(parsedLine.lineComponents.get(0) instanceof AtCommand && ((AtCommand) parsedLine.lineComponents.get(0)).commandName.toLowerCase().contains("response")))
             {
                 popScoping();
             }
-            if (scoping.peek().contains("if"))
+            if (!scoping.isEmpty() && scoping.peek().contains("if:"))
             {
                 popScoping();
             }
@@ -55,11 +61,7 @@ public class OutputGenerator
             }
             thisParsedLine = parsedLine;
             indexInCurrentLine = 0;
-            if (parsedLine.thisRegex.equals(ParsedLine.lineRegex.UNINTERPRETED))
-            {
-                pushLine("--UNINTERPRETED LINE:" + parsedLine.line);
-            }
-            else if (parsedLine.thisRegex.equals(ParsedLine.lineRegex.BLANK))
+            if (parsedLine.thisRegex.equals(ParsedLine.lineRegex.BLANK))
             {
                 pushLine("");
             }
@@ -138,6 +140,9 @@ public class OutputGenerator
             {
                 case "adddomme":
                     pushLine("addContact(1);");
+                    break;
+                case "addstroketime":
+                    pushLine("addStrokeTime(45);");
                     break;
                 case "acceptanswer":
                     pushLine("else");
@@ -274,6 +279,13 @@ public class OutputGenerator
                     break;
                 case "showsoftcoreimage":
                     pushLine("showTaggedImage(4, [\"softcore\"]);");
+                    break;
+                case "showfemdomimage":
+                    pushLine("showTaggedImage(4, [\"femdom\"]);");
+                    break;
+                //Dont currenttly have tag for hentai
+                case "showhentaiimage":
+                    pushLine("showTaggedImage(4, [\"bondage\"]);");
                     break;
                 case "showblowjobimage":
                     pushLine("showTaggedImage(4, [\"blowjob\"]);");
@@ -489,6 +501,30 @@ public class OutputGenerator
             {
                 case "slideshow":
                     pushLine("//" + command.toString());
+                    break;
+                case "setdomme":
+                    String dommeoutput = "setDom(";
+                    if (parameters.get(0).toString().toLowerCase().equals("domme"))
+                    {
+                        dommeoutput += "1);";
+                    }
+                    else if (parameters.get(0).toString().toLowerCase().equals("random"))
+                    {
+                        dommeoutput += "random(2, 3, 4));";
+                    }
+                    else if (parameters.get(0).toString().toLowerCase().equals("1"))
+                    {
+                        dommeoutput += "2);";
+                    }
+                    else if (parameters.get(0).toString().toLowerCase().equals("2"))
+                    {
+                        dommeoutput += "3);";
+                    }
+                    else if (parameters.get(0).toString().toLowerCase().equals("3"))
+                    {
+                        dommeoutput += "4);";
+                    }
+                    pushLine(dommeoutput);
                     break;
                 case "longhold":
                     pushLine("setLongHold(" + parameters.get(0).toString() + ");");
@@ -715,7 +751,8 @@ public class OutputGenerator
                     }
                     pushLine(outputResponse);
                     pushScoping("response:answer" + (answerCounter-1));
-                    pushCommand(new AtCommand("@goto2(" + parameters.get(0).toString() + ")"));
+                    String modifiedParam = Character.toLowerCase(parameters.get(0).toString().charAt(0)) + parameters.get(0).toString().substring(1) + "Response";
+                    pushLine(modifiedParam + "(\"" + parameters.get(0) + "\");");
                     
                     break;
                 case "responseno":
@@ -766,6 +803,11 @@ public class OutputGenerator
                     pushLine(toOutput7);
                     pushScoping("if:ruinsorgasm");
                     break;
+                case "orgasmrestricted":
+                    pushLine("if(getVar(\"orgasmrestricted\", false))");
+                    pushScoping("if:orgasmrestricted");
+                    break;
+                case "orgasmallowed":
                 case "allowsorgasm":
                     String toOutput8 = "if (";
                     for (int i = 0; i < parameters.size(); i++)
@@ -802,7 +844,7 @@ public class OutputGenerator
                     pushCommand(new AtCommand("@callreturn(Interrupt/" + parameters.get(0).toString() + ")"));
                     break;
                 case "timeout":
-                    pushLine("if (answer" + (answerCounter - 1) + ".isTimedOut())");
+                    pushLine("if (answer" + (answerCounter - 1) + ".isTimeout())");
                     pushScoping("if:timeout");
                     pushCommand(new AtCommand("@goto2(" + parameters.get(1).toString() + ")"));
                     popScoping();
@@ -931,7 +973,7 @@ public class OutputGenerator
                 case "setmodule":
                     pushLine("setVar(\"moduletorun\", \"" + parameters.get(0).toString() + "\")");
                 case "showimage":
-                    pushLine("getLocalTeasePicture(\"images\" + java.io.File.separator + \"" + parameters.get(0).toString() + "\");");
+                    pushLine("getLocalTeasePicture(\"Images\" + java.io.File.separator + \"" + parameters.get(0).toString() + "\");");
                     break;
                 case "playaudio":
                     pushLine("playAudio(\"Audio\" + java.io.File.separator + \"" + parameters.get(0).toString() + "\");");
@@ -939,8 +981,11 @@ public class OutputGenerator
                 case "playvideo":
                     pushLine("playVideo(\"Videos\" + java.io.File.separator + \"" + parameters.get(0).toString() + "\");");
                     break;
+                case "inputvar":
+                    pushLine("setVar(\"" + parameters.get(0) + "\", createInput().getAnswer());");
+                    break;
                 case "wait":
-                    pushLine("Wait(" + parameters.get(0).toString() + ");");
+                    pushLine("wait(" + parameters.get(0).toString() + ");");
                     break;
                 default:
                     if (commandName.toLowerCase().contains("chance"))
@@ -989,6 +1034,10 @@ public class OutputGenerator
     //Also includes the code to do a getresponse
     private void pushMessage(Message message)
     {
+        if (message.content.contains("...did"))
+        {
+            System.out.println("debug 1");
+        }
         String timeout = null;
         if (message.content.toLowerCase().contains("stop"))
         {
@@ -1173,7 +1222,7 @@ public class OutputGenerator
             else if (comp instanceof RandomText)
             {
                 RandomText randomText = (RandomText) comp;
-                outputMessage += "RandomText(";
+                outputMessage += "random(";
                 boolean moreComponents = message.messageComponents.size() > (counter + 1);
                 int randomTextCounter = 0;
                 for (Phrase phrase: randomText.phrases)
@@ -1374,7 +1423,7 @@ public class OutputGenerator
     
     private void pushIfStatement(IfStatement ifStatement)
     {
-        String toOutput = "If (";
+        String toOutput = "if (";
         if (!StringHelper.isInteger(ifStatement.condition1))
         {
             toOutput += "getVar(\"" + ifStatement.condition1 + "\", 0)";
@@ -1382,6 +1431,10 @@ public class OutputGenerator
         else
         {
             toOutput += ifStatement.condition1;
+        }
+        if (ifStatement.comparator.equals("="))
+        {
+            ifStatement.comparator = "==";
         }
         toOutput += " " + ifStatement.comparator + " ";
         if (!StringHelper.isInteger(ifStatement.condition2))

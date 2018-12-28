@@ -64,6 +64,8 @@ public class Driver extends Application
     
     public void Convert()
     {
+        path1 = TAIText.getText();
+        path2 = TAJText.getText();
         if (path1 != null && path2 != null)
         {   
             ScriptAnalyzer analyzer = new ScriptAnalyzer();
@@ -111,6 +113,10 @@ public class Driver extends Application
             @Override
             public void handle(MouseEvent event) {
                 DirectoryChooser chooser = new DirectoryChooser();
+                if (TAJText.getText() != null)
+                {
+                    chooser.setInitialDirectory(new File(TAJText.getText()));
+                }
                 chooser.setTitle("Select Tagging Folder");
 
                 String dir;
@@ -138,7 +144,10 @@ public class Driver extends Application
             @Override
             public void handle(ActionEvent event) {
                 FileChooser fileChooser = new FileChooser();
-
+                if (path1 != null)
+                {
+                    fileChooser.setInitialDirectory((new File(path1)).getParentFile());
+                }
                 // Set extension filter
                 FileChooser.ExtensionFilter extFilter = 
                         new FileChooser.ExtensionFilter("TEXT files (*.txt)", "*.txt");
