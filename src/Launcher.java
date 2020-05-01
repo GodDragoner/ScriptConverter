@@ -1,6 +1,6 @@
-
 import javax.swing.*;
 import java.io.*;
+import java.lang.management.ManagementFactory;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Paths;
@@ -14,7 +14,7 @@ public class Launcher {
     public static String OPERATING_SYSTEM = System.getProperty("os.name").toLowerCase();
 
     public static void main(String[] args) {
-        if (args.length == 0 && JAVA_VERSION > 10) {
+        if (ManagementFactory.getRuntimeMXBean().getInputArguments().size() == 0 && JAVA_VERSION > 10) {
             try {
                 //Re-launch the app itself with VM option passed
                 File currentDir = Paths.get(System.getProperty("user.dir")).toFile();
@@ -42,17 +42,16 @@ public class Launcher {
 
                         String downloadPath;
                         if (isWindows()) {
-                            downloadPath = "https://github.com/GodDragoner/TeaseAIJava/raw/master/Resources/openjfx_windows-x64_bin-sdk.zip";
+                            downloadPath = "https://download2.gluonhq.com/openjfx/11.0.2/openjfx-11.0.2_windows-x64_bin-sdk.zip";
                         } else if (isMac()) {
-                            downloadPath = "https://github.com/GodDragoner/TeaseAIJava/raw/master/Resources/openjfx_osx-x64_bin-sdk.zip";
+                            downloadPath = "https://download2.gluonhq.com/openjfx/11.0.2/openjfx-11.0.2_osx-x64_bin-sdk.zip";
                         } else if (isUnix()) {
-                            downloadPath = "https://github.com/GodDragoner/TeaseAIJava/raw/master/Resources/openjfx_linux-x64_bin-sdk.zip";
+                            downloadPath = "https://download2.gluonhq.com/openjfx/11.0.2/openjfx-11.0.2_linux-x64_bin-sdk.zip";
                         } else {
                             JOptionPane.showMessageDialog(null, "Your OS is not supported by JavaFX yet! Exiting.");
                             System.exit(0);
                             return;
                         }
-
 
                         URL url = new URL(downloadPath);
                         HttpURLConnection httpConnection = (HttpURLConnection) (url.openConnection());

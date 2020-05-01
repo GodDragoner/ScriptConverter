@@ -1,3 +1,4 @@
+import java.util.regex.Pattern;
 
 //This class is where all regexes are stored regarding the format of the parsing
 //for TAI
@@ -38,7 +39,10 @@ public class RegexHelper
     public static final String operator = "(\\+|-|\\/|\\*)";
     public static final String comparator = "(<=|>=|=|<|>)";
     public static final String formatter = "<(\\s?" + word + "|" + operator + "\\s?)+>";
-    
+
+
+    public static final String noComment = "[^\\\\\\/]";
+
     public static final String simplePhrase = "((\"|\')?(" + word + "|" + vocab + "|" + emoji + ")(\"|\\.+|\')?(" + punctuation + ")*(\\s+|$))+";
     public static final String randomText = "(@RT(\\(|\\[)(" + argument + "\\s*(,\\s*" + argument + "\\s?)*)(\\)|\\]))";  
     public static final String followUp = "@FollowUp(\\d\\d)?\\(\\s*" + argument + "\\s*\\)";
@@ -48,10 +52,24 @@ public class RegexHelper
     public static final String atCommandModify = "(?!@RT\\()(" + atCommandArgs + "\\s?=\\s?\\["+ argument + "\\]\\s?(" + operator + "\\s?\\[" + argument + "\\])*)";
     public static final String ifFunction = "(@If\\[" + argument + "\\]\\s?" + comparator + "\\s?\\[" + argument + "\\]\\s?Then\\(" + argument + "\\))";
     public static final String anyAtCommand = "((" + ifFunction + ")|(" + atCommandModify + ")|(" + atCommandArgs + ")|(" + atCommandSimple + "))";
+    //public static final String commandsLine = "((" + anyAtCommand + ")\\s*)+";
+
     public static final String commandsLine = "((" + anyAtCommand + ")\\s*)+";
-    public static final String sendMessage = "((" + phrase + ")((\\s?(" + commandsLine + ")\\s?(" + phrase + ")?)*))";
+
+    public static final String sendMessage = "((" + phrase + ")((\\s?" + noComment + " (" + commandsLine + ")\\s?(" + phrase + ")?)*))";
+    public static final String basicSendMessage = "^[^\\[(@](?!.*@(?!RT)(?!FollowUp))[^\\[(].*";
     public static final String methodStart = "(\\(((" + word + "\\s*)+)\\)\\s*(" + commandsLine + ")?)";
-    public static final String messageAfterCommand = "((" + commandsLine + ")\\s?(" + sendMessage + "))";
-    public static final String response = "(\\[((" + word + "|" + vocab + ")\\s*)+(,\\s*((" + word + "|" + vocab + ")\\s*)+)*\\])\\s*(" + sendMessage + "|" + commandsLine + "|" + messageAfterCommand + ")?";
-    
+    public static final String messageAfterCommand = "((" + commandsLine + ")\\s?" + noComment + "(" + sendMessage + "))";
+    //public static final String response = "(\\[((" + word + "|" + vocab + ")\\s*)+(,\\s*((" + word + "|" + vocab + ")\\s*)+)*\\])\\s*(" + sendMessage + "|" + commandsLine + "|" + messageAfterCommand + ")?";
+
+
+    public static final String response = "^(\\s*\\[.*\\])(.*)";
+
+    //Patterns
+    public static final Pattern BASIC_MESSAGE_PATTERN = Pattern.compile(basicSendMessage);
+    public static final Pattern SEND_MESSAGE_PATTERN = Pattern.compile(sendMessage);
+    public static final Pattern COMMAND_LINE_PATTERN = Pattern.compile(commandsLine);
+    public static final Pattern METHOD_START_PATTERN = Pattern.compile(methodStart);
+    public static final Pattern MESSAGE_AFTER_COMMAND_PATTERN = Pattern.compile(messageAfterCommand);
+    public static final Pattern RESPONSE_PATTERN = Pattern.compile(response);
 }   

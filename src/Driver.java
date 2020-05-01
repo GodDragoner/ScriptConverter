@@ -1,7 +1,3 @@
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -15,92 +11,62 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+
 //The driver class of the app. Currently, you need to change the file path of the input folder
 //to whatever file you want to read in. Output isn't getting written to the output file right now
 //You can just copy paste it from the console window for now
-public class Driver extends Application
-{
+public class Driver extends Application {
     private Stage primaryStage;
     private Button TAIButton;
     private Button TAJButton;
     private TextField TAIText;
     private TextField TAJText;
     private Button ConvertButton;
-    
+
     private String path1;
     private String path2;
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         launch(args);
-        /*RegexTesting testingRegex = new RegexTesting();
-        testingRegex.testSendMessage();
-        testingRegex.testCommands();
-        
-        ScriptAnalyzer analyzer = new ScriptAnalyzer();
-        File input = new File("C:\\Users\\tyler\\Desktop\\Coding\\Testing\\test\\TeaseAIJavaGithub\\Personalities\\HouseOfTease\\"
-                + "Original\\House_of_Tease_6\\Modules\\AV_ModFetish2.txt"); /*"C:\\Users\\tyler\\Desktop\\Coding\\Testing\\test\\TeaseAIJavaGithub\\Personalities\\HouseOfTease\\"s + "Original\\House_of_Tease_6\\Stroke\\End\\Extended_End.txt"
-        File output = new File("C:\\Users\\tyler\\Desktop\\Coding\\Testing\\test\\TeaseAIJavaGithub\\Personalities\\HouseOfTease\\"
-                + "Structure\\Start\\Extended_Start.js");
-        StringBuffer outputBuffer;
-        try
-        {
-            outputBuffer = analyzer.analyze(input, output);
-            if (!output.exists())
-            {
-                output.createNewFile();
-            }
-            BufferedWriter writer = new BufferedWriter(new FileWriter(output));
-            //writer.write(outputBuffer.toString());
-            writer.flush();
-            writer.close();
-        }
-        catch (Exception e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }*/
     }
-    
-    public void Convert()
-    {
+
+    public void Convert() {
         path1 = TAIText.getText();
         path2 = TAJText.getText();
-        if (path1 != null && path2 != null)
-        {   
+        if (path1 != null && path2 != null) {
             ScriptAnalyzer analyzer = new ScriptAnalyzer();
             File input = new File(path1); /*"C:\\Users\\tyler\\Desktop\\Coding\\Testing\\test\\TeaseAIJavaGithub\\Personalities\\HouseOfTease\\"s + "Original\\House_of_Tease_6\\Stroke\\End\\Extended_End.txt"*/
             File output = new File(path2 + File.separator + (input.getName()).replaceAll(".txt", ".js"));
+
             StringBuffer outputBuffer;
-            try
-            {
+            try {
                 outputBuffer = analyzer.analyze(input, output);
-                if (!output.exists())
-                {
+
+                if (!output.exists()) {
                     output.createNewFile();
                 }
+
                 BufferedWriter writer = new BufferedWriter(new FileWriter(output));
                 writer.write(outputBuffer.toString());
                 writer.flush();
                 writer.close();
-            }
-            catch (Exception e)
-            {
-                // TODO Auto-generated catch block
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
-    
+
     @Override
-    public void start(Stage arg0) throws Exception
-    {
+    public void start(Stage arg0) throws Exception {
         this.primaryStage = arg0;
         this.primaryStage.setTitle("Script Converter TAI->TAJ");
-        // TODO Auto-generated method stub
+
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(Driver.class.getResource("main.fxml"));
-        AnchorPane rootLayout = (AnchorPane) loader.load();
+        AnchorPane rootLayout = loader.load();
         Scene scene = new Scene(rootLayout);
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -113,11 +79,11 @@ public class Driver extends Application
             @Override
             public void handle(MouseEvent event) {
                 DirectoryChooser chooser = new DirectoryChooser();
-                if (TAJText.getText() != null)
-                {
+                if (TAJText.getText() != null) {
                     chooser.setInitialDirectory(new File(TAJText.getText()));
                 }
-                chooser.setTitle("Select Tagging Folder");
+
+                chooser.setTitle("Select Output Folder");
 
                 String dir;
                 if (TAJText.getText() != null && new File(TAJText.getText()).exists()) {
@@ -138,18 +104,17 @@ public class Driver extends Application
                 }
             }
         });
-        
+
         TAIButton.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
             public void handle(ActionEvent event) {
                 FileChooser fileChooser = new FileChooser();
-                if (path1 != null)
-                {
+                if (path1 != null) {
                     fileChooser.setInitialDirectory((new File(path1)).getParentFile());
                 }
                 // Set extension filter
-                FileChooser.ExtensionFilter extFilter = 
+                FileChooser.ExtensionFilter extFilter =
                         new FileChooser.ExtensionFilter("TEXT files (*.txt)", "*.txt");
                 fileChooser.getExtensionFilters().add(extFilter);
 
@@ -162,7 +127,7 @@ public class Driver extends Application
                 }
             }
         });
-        
+
         ConvertButton.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override

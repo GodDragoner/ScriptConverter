@@ -1,91 +1,69 @@
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 //The guts of all of the parsing happens here
-public class ScriptAnalyzer
-{  
-    
+public class ScriptAnalyzer {
+
     //Gets called from the driver to parse all of the input from the file and put it into an arraylist of parsed lines
-    public StringBuffer analyze(File input, File output) throws FileNotFoundException
-    {
+    public StringBuffer analyze(File input, File output) throws FileNotFoundException {
         ArrayList<ParsedLine> parsedInput = new ArrayList<ParsedLine>();
-        if (!input.exists())
-        {
+        if (!input.exists()) {
             throw new FileNotFoundException();
         }
-        
-        try
-        {
+
+        try {
             FileReader fileReader = new FileReader(input);
             BufferedReader bufferedReader = new BufferedReader(fileReader);
             String line;
-            
-            while ((line = bufferedReader.readLine()) != null) 
-            {
-                if (line.contains("RandomText"))
-                {
+
+            while ((line = bufferedReader.readLine()) != null) {
+                System.out.println("Line: " + line);
+
+                if (line.contains("RandomText")) {
                     line = line.replaceAll("RandomText", "RT");
                 }
-                Matcher sendMessageMatcher = Pattern.compile(RegexHelper.sendMessage).matcher(line);
-                Matcher commandsMatcher = Pattern.compile(RegexHelper.commandsLine).matcher(line);
-                Matcher methodMatcher = Pattern.compile(RegexHelper.methodStart).matcher(line);
-                Matcher messageAfterCommandMatcher = Pattern.compile(RegexHelper.messageAfterCommand).matcher(line);
-                Matcher responseMatcher = Pattern.compile(RegexHelper.response).matcher(line);
-                if (methodMatcher.matches())
-                {  
+
+                Matcher sendMessageMatcher = RegexHelper.SEND_MESSAGE_PATTERN.matcher(line);
+                Matcher commandsMatcher = RegexHelper.COMMAND_LINE_PATTERN.matcher(line);
+                Matcher methodMatcher = RegexHelper.METHOD_START_PATTERN.matcher(line);
+                Matcher messageAfterCommandMatcher = RegexHelper.MESSAGE_AFTER_COMMAND_PATTERN.matcher(line);
+                Matcher responseMatcher = RegexHelper.RESPONSE_PATTERN.matcher(line);
+
+                if (methodMatcher.matches()) {
+                    System.out.println("Method Start in analyzer: " + line);
                     parsedInput.add(new ParsedLine(line, ParsedLine.lineRegex.METHOD));
-                    //System.out.println("Method Start in analyzer: " + line);
-                }
-                else if (sendMessageMatcher.matches())
-                {
+                } else if (sendMessageMatcher.matches()) {
+                    System.out.println("Send Message in analyzer: " + line);
                     parsedInput.add(new ParsedLine(line, ParsedLine.lineRegex.SENDMESSAGE));
-                    //System.out.println("Send Message in analyzer: " + line);
-                }
-                else if (!line.contains("@RT") && commandsMatcher.matches())
-                {
+                } else if (!line.contains("@RT") && commandsMatcher.matches()) {
+                    System.out.println("Commands line line in analyzer: " + line);
                     parsedInput.add(new ParsedLine(line, ParsedLine.lineRegex.COMMANDS));
-                    //System.out.println("Commands line line in analyzer: " + line);
-                }
-                else if (messageAfterCommandMatcher.matches())
-                {
+                } else if (messageAfterCommandMatcher.matches()) {
+                    System.out.println("messageAfterCommandMatcher in analyzer: " + line);
                     parsedInput.add(new ParsedLine(line, ParsedLine.lineRegex.MESSAGEAFTERCOMMAND));
-                    //System.out.println("messageAfterCommandMatcher in analyzer: " + line);
-                }
-                else if (responseMatcher.matches())
-                {
+                } else if (responseMatcher.matches()) {
+                    System.out.println("Response line in analyzer: " + line);
                     parsedInput.add(new ParsedLine(line, ParsedLine.lineRegex.RESPONSE));
-                    //System.out.println("Response line in analyzer: " + line);
-                }
-                else 
-                {
-                    if (!line.trim().equals(""))
-                    {
-                        parsedInput.add(new ParsedLine(line, ParsedLine.lineRegex.UNINTERPRETED));
+                } else {
+                    if (!line.trim().equals("")) {
                         System.out.println("Uninterpreted line in analyzer: " + line);
-                    }
-                    else
-                    {
+                        parsedInput.add(new ParsedLine(line, ParsedLine.lineRegex.UNINTERPRETED));
+                    } else {
+                        System.out.println("Blank line in analyzer: " + line);
                         parsedInput.add(new ParsedLine(line, ParsedLine.lineRegex.BLANK));
                     }
                 }
-                
             }
+
             fileReader.close();
             OutputGenerator generator = new OutputGenerator(parsedInput);
             generator.generateOutput();
             return generator.getOutputBuffer();
-        }
-        catch (IOException e)
-        {
-            // TODO Auto-generated catch block
+        } catch (IOException e) {
             e.printStackTrace();
         }
+
         //Not currently returning anything to write to the file
         //Will be implemented later
         return null;

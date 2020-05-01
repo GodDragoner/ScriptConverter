@@ -27,13 +27,13 @@
          </rowConstraints>
          <children>
             <Label alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" prefHeight="36.0" prefWidth="552.0" text="TAI-&gt;TAJ Script Converter" textAlignment="CENTER" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.valignment="TOP" />
-            <TextField fx:id="TAIText" maxWidth="-Infinity" prefHeight="23.0" prefWidth="200.0" promptText="Tagging Folder" translateX="70.0" GridPane.halignment="RIGHT" GridPane.rowIndex="2" GridPane.valignment="TOP">
+            <TextField fx:id="TAIText" maxWidth="-Infinity" prefHeight="23.0" prefWidth="200.0" promptText="Input File" translateX="70.0" GridPane.halignment="RIGHT" GridPane.rowIndex="2" GridPane.valignment="TOP">
                <GridPane.margin>
                   <Insets />
                </GridPane.margin>
             </TextField>
             <Button fx:id="TAIButton" maxWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="58.0" text="..." translateX="70.0" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="2" GridPane.valignment="TOP" />
-            <TextField fx:id="TAJText" maxWidth="-Infinity" prefHeight="23.0" prefWidth="200.0" promptText="Tagging Folder" translateX="70.0" GridPane.halignment="RIGHT" GridPane.rowIndex="4" GridPane.valignment="TOP" />
+            <TextField fx:id="TAJText" maxWidth="-Infinity" prefHeight="23.0" prefWidth="200.0" promptText="Output Folder" translateX="70.0" GridPane.halignment="RIGHT" GridPane.rowIndex="4" GridPane.valignment="TOP" />
             <Button fx:id="TAJButton" maxWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="58.0" text="..." translateX="70.0" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="4" GridPane.valignment="TOP" />
             <Label alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="36.0" prefWidth="552.0" text="Tease AI txt File" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="TOP" />
             <Label alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="36.0" prefWidth="552.0" text="Tease AI Java Output Folder" GridPane.columnSpan="2" GridPane.rowIndex="3" />

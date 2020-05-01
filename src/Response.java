@@ -2,30 +2,30 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Response extends LineComponent
-{
+public class Response extends LineComponent {
     public ArrayList<String> responses;
-    public Response(String content)
-    {
+
+    public Response(String content) {
         super(content);
-        // TODO Auto-generated constructor stub
-        responses = new ArrayList<String>();
-        
-        String argumentRegex = "((\\(|\\[)|\\s?)(\\s?(" + RegexHelper.word + "|" + RegexHelper.vocab + ")\\s?)((\\)|\\])|\\s?,)";
-        
+
+        responses = new ArrayList<>();
+
+        String argumentRegex = "([^\\[,\\]]*)";
+
         Matcher argumentMatcher = Pattern.compile(argumentRegex).matcher(content);
-        while (argumentMatcher.find())
-        {
-            //System.out.println("Argument:" + argumentMatcher.group(4).trim());
-            responses.add(argumentMatcher.group(4).trim());
+
+        while (argumentMatcher.find()) {
+            String argument = argumentMatcher.group(1).trim();
+
+            if (argument.length() > 0) {
+                responses.add(argumentMatcher.group(1).trim());
+            }
         }
-        
     }
-    public String toString()
-    {
+
+    public String toString() {
         String toReturn = "";
-        for (String response:responses)
-        {
+        for (String response : responses) {
             toReturn += "<" + response + ">";
         }
         return "Response:" + toReturn;
